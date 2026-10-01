@@ -1,6 +1,6 @@
 # Integrating VFX8 into an existing game
 
-**Status:** the inclusion infrastructure is ready; the five VFX modules have not been implemented yet. The `<effect>.lua` paths below describe the planned filenames. The `demo_extension.lua` files in the demos can be used to verify module loading today.
+**Status:** `particles.lua` is implemented on all four engines. The examples below show its current include paths and public API; other effect modules will follow the same integration contract.
 
 VFX8 is a collection of selective modules. Developers include only the files they use. No module should define or replace `_init`, `_update`, `_update60`, `_draw`, `TIC`, or the game's `love.*` callbacks. The game retains its own lifecycle and explicitly calls the effect API, which will be documented on that effect's page in `docs/effects/`.
 
@@ -9,16 +9,18 @@ VFX8 is a collection of selective modules. Developers include only the files the
 Place the effect file next to your cartridge, for example `vfx8/particles.lua`, and add this to the code of your **existing cartridge**:
 
 ```lua
+-- Copy src/pico8/particles.lua to vfx8/particles.lua in your cart.
 #include vfx8/particles.lua
+particles = vfx8_particles.new({quality = "medium"})
 
 function _update60()
   -- update the game
-  -- call the effect's update function when available
+  particles:update(1/60)
 end
 
 function _draw()
   -- draw the game
-  -- call the effect's draw function when available
+  particles:draw()
 end
 ```
 
@@ -29,14 +31,16 @@ end
 Copy `vfx8/<effect>.lua` into your cartridge and load it once near the start of your existing `main.lua`:
 
 ```lua
+-- Copy src/picotron/particles.lua to vfx8/particles.lua in your cart.
 include("vfx8/particles.lua")
+particles = vfx8_particles.new({quality = "medium"})
 
 function _update()
-  -- update the game and the effect
+  particles:update(1 / 60)
 end
 
 function _draw()
-  -- draw the game and the effect
+  particles:draw()
 end
 ```
 
@@ -44,21 +48,21 @@ end
 
 ## LÖVE — project `require()`
 
-Copy the future module into `vfx8/<effect>.lua` in your project and load it in your existing `main.lua`:
+Copy `src/love2d/particles.lua` into `vfx8/particles.lua` in your project and load it in your existing `main.lua`:
 
 ```lua
-local particles = require("vfx8.particles")
+local particle_system = require("vfx8.particles").new({quality = "medium"})
 
 function love.update(dt)
-  -- update the game and the effect
+  particle_system:update(dt)
 end
 
 function love.draw()
-  -- draw the game and the effect
+  particle_system:draw()
 end
 ```
 
-Each LÖVE module will return a Lua table; its constructor and concrete methods will be specified on the effect page. The [LÖVE demo](../examples/love2d/main.lua) uses `require("demo_extension")`.
+The particle module returns a Lua table; see [its effect page](effects/particles.md) for the complete API. The [LÖVE demo](../examples/love2d/main.lua) stages the source under `vfx8/` before running.
 
 ## TIC-80 — build-time include
 
@@ -66,9 +70,14 @@ TIC-80 imports Lua code into the cartridge. To combine your **existing game sour
 
 ```lua
 --#include "vfx8/particles.lua"
+local vfx8_particles_instance = vfx8_particles.new({quality = "medium"})
 
 function TIC()
-  -- update and draw the game and the effect
+  vfx8_particles_instance:update(1 / 60)
+  cls(0)
+  -- Draw the game scene here.
+  -- Draw the game first, then call vfx8_particles_instance:draw().
+  vfx8_particles_instance:draw()
 end
 ```
 

@@ -2,7 +2,7 @@
 
 A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goal is to make effects easy to integrate into games, with predictable costs on fantasy consoles and richer quality options where resources allow.
 
-> **Status:** project structure, implementation plan, and demo environment are available. Effect slots are empty; there are no implemented VFX modules or benchmarks yet.
+> **Status:** the adaptive particle system is implemented for all four engines. The remaining four modules and measured benchmarks are planned.
 
 ## Principles
 
@@ -21,17 +21,17 @@ A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goa
 | LÖVE | Lua modules loaded into a project | Idiomatic Lua API; use engine graphics features where helpful |
 | TIC-80 | Lua source integrated into a cartridge | Limited memory and per-frame work, native drawing APIs |
 
-This table describes the project direction, not files that are ready to use. Exact import instructions will be verified and added with each implementation.
+The particle module is available for all four engines. See its [effect page](docs/effects/particles.md) for integration, API, limits, and known verification gaps.
 
 ## Project structure
 
-The repository has separate engine folders under `src/`, `examples/`, and `tests/`, per-effect pages under `docs/effects/`, and reproducible scenarios/results under `benchmarks/`. `docs/implementation-plan.md` describes the roadmap, while `docs/integration.md` explains how to include an effect in an existing game. `tools/tic80_include.py` expands TIC-80 include directives before importing code into a cartridge.
+The repository has separate engine folders under `src/`, `examples/`, and `tests/`, per-effect pages under `docs/effects/`, and reproducible scenarios/results under `benchmarks/`. `docs/implementation-plan.md` describes the roadmap, while `docs/integration.md` explains how to include an effect in an existing game. `tools/tic80_include.py` expands TIC-80 include directives before importing code into a cartridge. `examples/love2d/stage_demo.py` stages the LÖVE demo with the current source module.
 
-Empty directories currently contain only a `.gitkeep` file. The planned convention is to use the same short name for a module's source, documentation, example, and benchmark, such as `particles`.
+The implemented particle module follows the short-name convention across source and documentation. Other effect slots are roadmap placeholders.
 
 ## Try the demo scenes
 
-Four demos are available, one per engine, with module selection, `low`/`medium`/`high` profiles, a trigger at the crosshair, and an effects on/off comparison. They show a reference scene before the effects are implemented. Startup instructions and module connection points are in [`examples/README.md`](examples/README.md).
+Four demos are available, one per engine, with module selection, `low`/`medium`/`high` profiles, a particle trigger at the crosshair, and an effects on/off comparison. Startup instructions are in [`examples/README.md`](examples/README.md).
 
 To include only the effects you need in an **existing game or cartridge**, follow the [integration guide](docs/integration.md). The engines use `#include`, `include()`, `require()`, or a pre-import include expansion for TIC-80. Effects must not replace the game's main loop.
 
@@ -51,7 +51,7 @@ The distinction between a **screen flash** (`screen_fx`) and an **object flash**
 
 ## Documentation for each effect
 
-Each module will have its own page in `docs/effects/`, with sections for its variants: visual result, supported engines, a minimal example for each engine, parameters and defaults, quality profiles, measured cost, limits, graphics-state interactions, and advice for adapting it to a game. The page will ship alongside the module source and demo.
+Each module has or will have its own page in `docs/effects/`, with sections for its variants: visual result, supported engines, a minimal example for each engine, parameters and defaults, quality profiles, measured cost, limits, graphics-state interactions, and advice for adapting it to a game. The page ships alongside the module source and demo.
 
 ## Engine references
 
@@ -59,4 +59,4 @@ Technical choices will be checked against official documentation: [PICO-8](https
 
 ## Contributing
 
-The project is currently in the planning stage. Each implementation should follow the plan and include source, an effect page, a minimal demo, and reproducible measurements for every engine claimed as supported.
+The particle system is the first implemented module. Further implementations should follow the plan and include source, an effect page, a minimal demo, and reproducible measurements for every engine claimed as supported.

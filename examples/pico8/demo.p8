@@ -4,6 +4,7 @@ __lua__
 -- vfx8 demo harness; effects are loaded from demo_extension.lua.
 -- pico-8 expands this at cartridge boot, like a c-style include.
 #include demo_extension.lua
+#include ../../src/pico8/particles.lua
 
 names={"particles","screen fx","pixel warp","palette fx","pseudo 3d"}
 qualities={"low","medium","high"}
@@ -50,6 +51,8 @@ function _update60()
   fx_enabled=not fx_enabled
   refresh_fx()
  end
+ if keyp("z") and active and active.cycle_preset then active.cycle_preset() end
+ if keyp("c") and active and active.cycle_shape then active.cycle_shape() end
  if btnp(4) and active and active.trigger then
   active.trigger(64,67)
  end
@@ -78,10 +81,11 @@ function _draw()
  rectfill(0,0,127,27,0)
  print("vfx8 demo",2,2,7)
  print(names[selected],2,9,10)
+ if active and active.label then print(active.label(),2,25,11) end
  print("q:"..qualities[quality].." fx:"..(fx_enabled and "on" or "off"),2,17,7)
  rectfill(0,105,127,127,0)
  local status=not fx_enabled and "fx disabled" or (active and "ready" or "not implemented")
  print(status,2,107,active and 11 or 6)
  print("<>:fx ^v:q",2,115,7)
- print("o:trigger x:toggle",2,122,7)
+ print("o:fire x:fx z:preset c:shape",2,122,7)
 end

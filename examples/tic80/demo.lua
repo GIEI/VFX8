@@ -1,5 +1,6 @@
 -- VFX8 demo harness. Build this source before importing into TIC-80.
 --#include "demo_extension.lua"
+--#include "../../src/tic80/particles.lua"
 
 local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d"}
 local qualities = {"low", "medium", "high"}
@@ -38,6 +39,8 @@ function TIC()
   if btnp(0) then quality = quality % 3 + 1; refresh_fx() end
   if btnp(1) then quality = (quality + 1) % 3 + 1; refresh_fx() end
   if btnp(5) then fx_enabled = not fx_enabled; refresh_fx() end
+  if btnp(6) and active and active.cycle_preset then active.cycle_preset() end
+  if btnp(7) and active and active.cycle_shape then active.cycle_shape() end
   if btnp(4) and active and active.trigger then active.trigger(120, 70) end
   if active and active.update then active.update(1 / 60) end
 
@@ -50,9 +53,10 @@ function TIC()
   rect(0, 0, 240, 28, 0)
   print("VFX8 DEMO  " .. names[selected], 4, 3, 7)
   print("QUALITY: " .. qualities[quality] .. "   FX: " .. (fx_enabled and "ON" or "OFF"), 4, 14, 10)
+  if active and active.label then print(active.label(), 4, 23, 11) end
   rect(0, 110, 240, 26, 0)
   local status = not fx_enabled and "FX DISABLED" or (active and "READY" or "NOT IMPLEMENTED")
   print(status, 4, 112, active and 11 or 6)
   print("LEFT/RIGHT: MODULE   UP/DOWN: QUALITY", 4, 120, 7)
-  print("A: TRIGGER   B: FX ON/OFF", 4, 128, 7)
+  print("A: FIRE B: FX X: PRESET Y: SHAPE", 4, 128, 7)
 end

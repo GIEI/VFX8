@@ -2,7 +2,7 @@
 
 ## Goal and scope
 
-Build a collection of composable 2D visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. The repository structure, project documentation, and a reference demo for each engine are available; the effects remain to be implemented.
+Build a collection of composable 2D visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. The first effect, an adaptive particle system, is implemented for all four engines; the remaining effects are planned.
 
 The first version will use Lua or each engine's Lua dialect and native drawing primitives. It will not require external assets, extra frameworks, or a mandatory shared runtime. Advanced capabilities will remain optional.
 
@@ -38,6 +38,8 @@ The order below is the development priority: first, feedback useful in almost an
 - **Emission:** point, line segment, and bounded area. Parameters for gravity, inertia, lifetime, color ramping, and shrinking pixel size over time.
 - **Budget:** fixed-capacity pool, per-frame emission limit, active-item update limit, and explicit behavior when the pool is full.
 - **Scaling:** `low` uses few items and simple primitives; higher profiles increase density, trail samples, and detail within configured limits.
+
+**Status:** implemented for PICO-8, Picotron, LÖVE, and TIC-80. The module provides all five presets, three emission types, fixed-capacity pools, update-interval emission caps, and `low`/`medium`/`high` profiles. Demos and usage documentation are connected. Actual engine execution, performance measurements, and benchmarked budgets remain to be verified; values are conservative starting limits, not measured results.
 
 **Deliverable:** all five presets and three emission types work in demos for supported engines; saturation does not exceed the declared work budget. This module establishes the shared interface and benchmark method.
 

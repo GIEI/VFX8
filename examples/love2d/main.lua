@@ -6,6 +6,8 @@ local qualities = {"low", "medium", "high"}
 local selected, quality = 1, 1
 local fx_enabled, active = true, nil
 local tick = 0
+VFX8_DEMO_STATE = {}
+local mcp = nil
 
 local colors = {
   bg = {0.05, 0.07, 0.14},
@@ -31,16 +33,33 @@ local function refresh_fx()
   end
 end
 
+local function sync_mcp_state()
+  local particle_count = 0
+  if active and active.stats then particle_count = active.stats() end
+  VFX8_DEMO_STATE.module = names[selected]
+  VFX8_DEMO_STATE.quality = qualities[quality]
+  VFX8_DEMO_STATE.effects_enabled = fx_enabled
+  VFX8_DEMO_STATE.particle_effect = active and active.label and active.label() or "unavailable"
+  VFX8_DEMO_STATE.active_particles = particle_count
+end
+
 function love.load()
   love.window.setMode(720, 408, {resizable = false})
   love.window.setTitle("VFX8 demo")
   love.graphics.setDefaultFilter("nearest", "nearest")
   love.graphics.setFont(love.graphics.newFont(8))
   refresh_fx()
+  sync_mcp_state()
+  if love.filesystem.getInfo("vfx8_mcp_enabled") then
+    mcp = require("love_mcp")
+    mcp.init({host = "127.0.0.1", port = 21110, game_state = VFX8_DEMO_STATE})
+  end
 end
 
 function love.keypressed(key)
-  if key == "left" then
+  if key == "escape" then
+    love.event.quit()
+  elseif key == "left" then
     selected = (selected + 3) % 5 + 1
     refresh_fx()
   elseif key == "right" then
@@ -55,6 +74,10 @@ function love.keypressed(key)
   elseif key == "x" then
     fx_enabled = not fx_enabled
     refresh_fx()
+  elseif key == "p" and active and active.cycle_preset then
+    active.cycle_preset()
+  elseif key == "m" and active and active.cycle_shape then
+    active.cycle_shape()
   elseif (key == "space" or key == "z") and active and active.trigger then
     active.trigger(120, 70)
   end
@@ -63,6 +86,7 @@ end
 function love.update(dt)
   tick = (tick + dt * 60) % 240
   if active and active.update then active.update(dt) end
+  sync_mcp_state()
 end
 
 local function draw_scene()
@@ -97,6 +121,7 @@ function love.draw()
   love.graphics.print("VFX8 DEMO  " .. names[selected], 4, 2)
   color(colors.label)
   love.graphics.print("QUALITY: " .. qualities[quality] .. "   FX: " .. (fx_enabled and "ON" or "OFF"), 4, 14)
+  if active and active.label then love.graphics.print(active.label(), 4, 23) end
   color(colors.bg)
   love.graphics.rectangle("fill", 0, 110, 240, 26)
   color(active and colors.label or colors.dim)
@@ -104,6 +129,11 @@ function love.draw()
   love.graphics.print(status, 4, 110)
   color(colors.target)
   love.graphics.print("LEFT/RIGHT: MODULE   UP/DOWN: QUALITY", 4, 118)
-  love.graphics.print("SPACE/Z: TRIGGER   X: FX ON/OFF", 4, 126)
+  love.graphics.print("SPACE: TRIGGER X: TOGGLE P: PRESET M: SHAPE", 4, 126)
   love.graphics.pop()
+  if mcp_bridge then mcp_bridge.captureIfPending() end
+end
+
+function love.quit()
+  if mcp then mcp.shutdown() end
 end
