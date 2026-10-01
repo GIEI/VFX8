@@ -1,0 +1,12 @@
+-- Register a VFX8 effect adapter here after including its source in demo.p8.
+-- For example: #include ../../src/pico8/particles.lua in demo.p8,
+-- before this demo_extension.lua include. PICO-8 includes are not recursive.
+fx={}
+-- fx[1]={
+--  on_enter=function(q) end,
+--  on_exit=function() end,
+--  trigger=function(x,y) end,
+--  update=function(dt) end,
+--  render_scene=function(draw_scene) draw_scene() end,
+--  draw=function() end
+-- }

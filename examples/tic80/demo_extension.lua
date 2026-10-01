@@ -1,0 +1,11 @@
+-- Register a VFX8 effect adapter here after build-time inclusion of its source.
+-- Add --#include "vfx8/particles.lua" to demo.lua before its demo_extension include.
+local fx = {}
+-- fx[1] = {
+--   on_enter = function(quality) end,
+--   on_exit = function() end,
+--   trigger = function(x, y) end,
+--   update = function(dt) end,
+--   render_scene = function(draw_scene) draw_scene() end,
+--   draw = function() end
+-- }
