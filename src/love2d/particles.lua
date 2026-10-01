@@ -89,7 +89,8 @@ function methods._emit(self, preset_name, ax, ay, bx, by, width, height, shape, 
   if gravity == nil then gravity = preset.gravity end
   local drag = options.drag
   if drag == nil then drag = preset.drag end
-  local life = options.life or preset.life
+  local life = options.life
+  if life == nil then life = preset.life end
   life = math.max(0.05, life)
   local spread = options.spread or 0
 
@@ -128,7 +129,9 @@ function methods._emit(self, preset_name, ax, ay, bx, by, width, height, shape, 
     self.count = i
     self.x[i], self.y[i], self.vx[i], self.vy[i] = px, py, vx, vy
     self.age[i], self.life[i] = 0, life
-    self.size[i], self.end_size[i] = preset.size, options.end_size or preset.end_size
+    local end_size = options.end_size
+    if end_size == nil then end_size = preset.end_size end
+    self.size[i], self.end_size[i] = preset.size, end_size
     self.gravity[i], self.drag[i], self.kind[i] = gravity, drag, kind
   end
   self.frame_used = self.frame_used + spawn

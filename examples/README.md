@@ -1,13 +1,13 @@
 # Demo environment
 
-Four reference scenes, one per engine, let you try VFX8 modules against the same composition: a grid, floor, moving object, and central crosshair. The adaptive particle system is connected to the first module slot; the other four slots remain planned.
+Four reference scenes, one per engine, let you try VFX8 modules against the same composition: a grid, floor, moving object, and central crosshair. The adaptive particle system and screen shake/distortion are connected to the first two module slots; the remaining three are planned.
 
 ## Startup
 
 | Engine | Files | How to run |
 | --- | --- | --- |
 | PICO-8 | [`pico8/demo.p8`](pico8/demo.p8) + [`demo_extension.lua`](pico8/demo_extension.lua) | Load the `.p8` cartridge in PICO-8 and use `RUN`/Ctrl+R. Keep both files together. |
-| Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/particles.lua` | Put the files in the cartridge root and copy `src/picotron/particles.lua` to `vfx8/particles.lua`; run with Ctrl+R. |
+| Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/*.lua` | Put the files in the cartridge root and copy the implemented modules from `src/picotron/` to `vfx8/`; run with Ctrl+R. |
 | LÖVE | [`love2d/stage_demo.py`](love2d/stage_demo.py) | Run `python examples/love2d/stage_demo.py` from the repository root; the script stages the source module and launches LÖVE. |
 | TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file first, import it into a Lua cartridge, then use `run`. |
 
@@ -45,7 +45,7 @@ Each `demo_extension.lua` defines an `fx` table with one slot for each of the fi
 | Slot | Module |
 | --- | --- |
 | `fx[1]` | `particles` (implemented) |
-| `fx[2]` | `screen_fx` |
+| `fx[2]` | `screen_fx` (implemented) |
 | `fx[3]` | `pixel_deform` |
 | `fx[4]` | `palette_fx` |
 | `fx[5]` | `pseudo3d` |
@@ -71,4 +71,4 @@ On PICO-8 and TIC-80, connect one module at a time: including all five in one te
 
 ## Quick demo check
 
-At startup, the grid, moving square, crosshair, and `READY` status should be visible for particles. The arrows should change module and profile. The comparison button should toggle `FX: ON` and `FX: OFF`. The trigger button emits particles at the crosshair; preset and shape controls cycle the available variants. Other modules show `NOT IMPLEMENTED`.
+At startup, the grid, moving square, crosshair, and `READY` status should be visible. The arrows should change module and profile. In the particle module, the trigger emits particles at the crosshair; preset and shape controls cycle the variants. In `screen_fx`, the trigger applies shake, flash, and an expanding ring at the crosshair. The remaining modules show `NOT IMPLEMENTED`.

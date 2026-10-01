@@ -1,6 +1,7 @@
 -- VFX8 demo harness. Put both Lua files in a Picotron cartridge.
 include("demo_extension.lua")
 include("vfx8/particles.lua")
+include("vfx8/screen_fx.lua")
 
 local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d"}
 local qualities = {"low", "medium", "high"}

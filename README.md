@@ -2,12 +2,12 @@
 
 A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goal is to make effects easy to integrate into games, with predictable costs on fantasy consoles and richer quality options where resources allow.
 
-> **Status:** the adaptive particle system is implemented for all four engines. The remaining four modules and measured benchmarks are planned.
+> **Status:** the adaptive particle system and an initial screen shake/flash/ring module are implemented for all four engines. Native verification and measured benchmarks remain open; the other three modules are planned.
 
 ## Principles
 
 - **One effect, four focused implementations.** Versions share behavior and terminology while using each engine's APIs and formats. Fantasy console code remains usable without a mandatory central runtime.
-- **Predictable costs.** Each effect will have explicit limits for active objects, per-frame work, and temporary memory. When it reaches a limit, it degrades predictably.
+- **Predictable costs.** Each effect will have explicit limits for active objects, per-update work, and temporary memory. When it reaches a limit, it degrades predictably.
 - **Scalable quality.** The `low`, `medium`, and `high` profiles will adjust density, duration, detail, and drawing passes. Each engine will have a verified default profile; unsupported options will be documented.
 - **Quick integration.** Each effect will have engine-specific setup instructions, a minimal working example, and one page in `docs/effects/`.
 - **Measured performance.** Final budgets will come from tests on the actual engines, with the engine version and test scene recorded.
@@ -21,13 +21,13 @@ A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goa
 | LÖVE | Lua modules loaded into a project | Idiomatic Lua API; use engine graphics features where helpful |
 | TIC-80 | Lua source integrated into a cartridge | Limited memory and per-frame work, native drawing APIs |
 
-The particle module is available for all four engines. See its [effect page](docs/effects/particles.md) for integration, API, limits, and known verification gaps.
+The particle module and the initial screen effects module are available for all four engines. See the [particle page](docs/effects/particles.md) and [screen effects page](docs/effects/screen_fx.md) for integration, APIs, limits, and known verification gaps.
 
 ## Project structure
 
 The repository has separate engine folders under `src/`, `examples/`, and `tests/`, per-effect pages under `docs/effects/`, and reproducible scenarios/results under `benchmarks/`. `docs/implementation-plan.md` describes the roadmap, while `docs/integration.md` explains how to include an effect in an existing game. `tools/tic80_include.py` expands TIC-80 include directives before importing code into a cartridge. `examples/love2d/stage_demo.py` stages the LÖVE demo with the current source module.
 
-The implemented particle module follows the short-name convention across source and documentation. Other effect slots are roadmap placeholders.
+The implemented modules follow the short-name convention across source and documentation. The remaining three effect slots are roadmap placeholders.
 
 ## Try the demo scenes
 
@@ -42,7 +42,7 @@ The roadmap contains five modules, in the requested order of utility, visual imp
 | Order | Module | Included effects |
 | --- | --- | --- |
 | 1 | **Adaptive particle system** (`particles`) | explosions, sparks, trails, smoke, and landing dust; point, line, and area emission |
-| 2 | **Screen shake and distortion** (`screen_fx`) | directional or damped shake, shockwave/ripple, temporary screen flash and color inversion |
+| 2 | **Screen shake and distortion** (`screen_fx`) | trauma and directional shake, expanding ring cue, temporary color flash; framebuffer ripple and palette inversion are planned |
 | 3 | **Pixel-based deformation** (`pixel_deform`) | water/flag waves, squash and stretch, dithered dissolve |
 | 4 | **Palette and color cycling** (`palette_fx`) | color cycling, local flash/glow, day/night and color filters |
 | 5 | **Pseudo-3D rasterizer** (`pseudo3d`) | perspective plane, 3D starfield, depth-scaled and sorted sprites |

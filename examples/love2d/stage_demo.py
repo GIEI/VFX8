@@ -26,9 +26,11 @@ def main() -> int:
     args = parser.parse_args()
 
     module = ROOT / "src" / "love2d" / "particles.lua"
-    if not module.is_file():
-        print(f"Missing particle module: {module}", file=sys.stderr)
-        return 1
+    screen_module = ROOT / "src" / "love2d" / "screen_fx.lua"
+    for required in (module, screen_module):
+        if not required.is_file():
+            print(f"Missing effect module: {required}", file=sys.stderr)
+            return 1
 
     BUILD.mkdir(parents=True, exist_ok=True)
     shutil.copy2(EXAMPLE / "main.lua", BUILD / "main.lua")
@@ -46,6 +48,7 @@ def main() -> int:
     package = BUILD / "vfx8"
     package.mkdir(parents=True, exist_ok=True)
     shutil.copy2(module, package / "particles.lua")
+    shutil.copy2(screen_module, package / "screen_fx.lua")
 
     executable = os.environ.get("LOVE_EXECUTABLE") or shutil.which("love")
     if not executable:

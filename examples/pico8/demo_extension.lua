@@ -24,3 +24,18 @@ fx[1]={
  end,
  label=function() return preset.." / "..shape end
 }
+local screen_fx=nil
+fx[2]={
+ on_enter=function(q) screen_fx=vfx8_screen_fx.new({width=128,height=128,capacity=q=="high" and 8 or 4}) end,
+ on_exit=function() if screen_fx then screen_fx:clear() end end,
+ trigger=function(x,y)
+  if not screen_fx then return end
+  screen_fx:add_trauma(0.8)
+  screen_fx:impulse(3,1,0.18)
+  screen_fx:flash(0.06,7)
+  screen_fx:shockwave(x,y,2,8,0.28)
+ end,
+ update=function(dt) if screen_fx then screen_fx:update(dt) end end,
+ render_scene=function(draw_scene) if screen_fx then screen_fx:render(draw_scene) else draw_scene() end end,
+ label=function() return "shake / flash / ring" end
+}

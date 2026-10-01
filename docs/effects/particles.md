@@ -6,10 +6,10 @@ The particle system provides compact, reusable feedback for impacts and movement
 
 | Engine | Module | Include method | Runtime verification |
 | --- | --- | --- | --- |
-| PICO-8 | `src/pico8/particles.lua` | `#include` | Not run in this environment |
-| Picotron | `src/picotron/particles.lua` | `include()` | Not run in this environment |
-| LÖVE | `src/love2d/particles.lua` | `require()` | Not run in this environment |
-| TIC-80 | `src/tic80/particles.lua` | build-time include | Include build verified; console runtime not available |
+| PICO-8 | `src/pico8/particles.lua` | `#include` | Static contract checks; native runtime not available in this environment |
+| Picotron | `src/picotron/particles.lua` | `include()` | Static contract checks; native runtime not available in this environment |
+| LÖVE | `src/love2d/particles.lua` | `require()` | Native runtime integration verified separately; rerun after source updates |
+| TIC-80 | `src/tic80/particles.lua` | build-time include | Include build and static contract checks; native runtime not available in this environment |
 
 The `low`, `medium`, and `high` settings are conservative starting budgets. They have not yet been benchmarked on their target engines; values are not performance measurements.
 
@@ -102,9 +102,9 @@ system:clear()
 local active, capacity, last_interval_emissions = system:stats()
 ```
 
-Preset names are `explosion`, `sparks`, `trail`, `smoke`, and `dust`. `count`, `speed`, `gravity`, `drag`, `life`, `end_size`, and `spread` override preset defaults. Gravity is in pixels per second squared, speed in pixels per second, and lifetime in seconds. Positive gravity points down. Drag reduces velocity linearly each update. A line distributes particles along its endpoints; area emission samples a rectangle extending right and down from `(x, y)`. Point emission uses `spread` as symmetric positional jitter.
+Preset names are `explosion`, `sparks`, `trail`, `smoke`, and `dust`. `count`, `speed`, `gravity`, `drag`, `life`, `end_size`, and `spread` override preset defaults. Zero is a valid override for numeric options, including `end_size = 0`; lifetime is clamped to a minimum of 0.05 seconds. Gravity is in pixels per second squared, speed in pixels per second, and lifetime in seconds. Positive gravity points down. Drag reduces velocity linearly each update. A line distributes particles along its endpoints; area emission samples a rectangle extending right and down from `(x, y)`. Point emission uses `spread` as symmetric positional jitter.
 
-`emit*` returns the number admitted. Unknown presets and exhausted budgets return zero. When capacity or the emission budget is reached, new particles are dropped; existing particles are never evicted. The emission counter resets at the end of each `update()` call, so call update once per simulation tick. Emit before or after update, but keep all emissions for a tick within one update interval. `stats()` reports the number admitted in the most recently completed interval. The random sequence is local to each system and does not alter a game's random generator.
+`emit*` returns the number admitted. Unknown presets and exhausted budgets return zero. When capacity or the emission budget is reached, new particles are dropped; existing particles are never evicted. The emission counter resets at the end of each `update()` call. Call `update()` exactly once per simulation tick and group all emissions for that tick before it to get one shared per-tick cap. `stats()` reports the number admitted in the most recently completed tick. The random sequence is local to each system and does not alter a game's random generator.
 
 ## Quality profiles and hard limits
 
@@ -121,7 +121,7 @@ Profiles set the default pool and emission limits. Explicit capacity or `max_emi
 
 Particles are square filled pixels/sprites. Palette-index engines use fixed palette ramps per preset; LÖVE maps the same ramp to RGB values based on the PICO-8 palette. The module does not change camera, clip, or palette state. LÖVE restores the caller's draw color after rendering. `draw()` should run after the scene and before UI that must appear above effects.
 
-The implementation updates and draws at most the active pool capacity. The pool uses structure-of-arrays storage to avoid per-particle tables and avoids temporary allocations in update/draw. PICO-8 currently reserves eleven arrays up to its configured capacity; exact token, memory, and CPU costs have not been measured. See `benchmarks/` when measurements are added.
+The implementation updates and draws at most the active pool capacity. The pool uses structure-of-arrays storage to avoid per-particle tables and avoids temporary allocations in update/draw. PICO-8 currently reserves eleven arrays up to its configured capacity; exact token, memory, and CPU costs have not been measured. Portable contract checks live in `tests/test_particle_contract.py`; TIC-80 include handling is tested in `tests/tic80/`. See `benchmarks/` when actual-engine measurements are added.
 
 ## Demo
 

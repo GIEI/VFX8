@@ -5,6 +5,7 @@ __lua__
 -- pico-8 expands this at cartridge boot, like a c-style include.
 #include demo_extension.lua
 #include ../../src/pico8/particles.lua
+#include ../../src/pico8/screen_fx.lua
 
 names={"particles","screen fx","pixel warp","palette fx","pseudo 3d"}
 qualities={"low","medium","high"}

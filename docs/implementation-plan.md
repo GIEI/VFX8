@@ -36,10 +36,10 @@ The order below is the development priority: first, feedback useful in almost an
 
 - **Variants:** explosions, sparks, trails, smoke, and landing dust; presets built on the same base routine.
 - **Emission:** point, line segment, and bounded area. Parameters for gravity, inertia, lifetime, color ramping, and shrinking pixel size over time.
-- **Budget:** fixed-capacity pool, per-frame emission limit, active-item update limit, and explicit behavior when the pool is full.
+- **Budget:** fixed-capacity pool, per-update emission limit, active-item update limit, and explicit behavior when the pool is full.
 - **Scaling:** `low` uses few items and simple primitives; higher profiles increase density, trail samples, and detail within configured limits.
 
-**Status:** implemented for PICO-8, Picotron, LÖVE, and TIC-80. The module provides all five presets, three emission types, fixed-capacity pools, update-interval emission caps, and `low`/`medium`/`high` profiles. Demos and usage documentation are connected. Actual engine execution, performance measurements, and benchmarked budgets remain to be verified; values are conservative starting limits, not measured results.
+**Status:** source implementations, demos, usage documentation, portable API contract checks, and TIC-80 include tests exist for all four engines. The module provides all five presets, three emission types, fixed-capacity pools, per-update emission caps, and `low`/`medium`/`high` profiles. Native cartridge verification and reproducible performance measurements remain incomplete; published limits are conservative starting values, not measured results.
 
 **Deliverable:** all five presets and three emission types work in demos for supported engines; saturation does not exceed the declared work budget. This module establishes the shared interface and benchmark method.
 
@@ -50,7 +50,9 @@ The order below is the development priority: first, feedback useful in almost an
 - **Global flash:** temporary screen flash and color inversion, with a defined duration and restoration of the palette/graphics state. Pausing gameplay during a hit remains the application's choice.
 - **Scaling:** shake intensity and frequency; resolution, affected area, and sample/pass count for ripple and flash.
 
-**Deliverable:** effects can be combined without leaving the camera or colors altered after drawing; each engine's ripple implementation is described and measured.
+**Status:** initial trauma shake, directional impulses, solid flash overlays, and bounded expanding ring cues are implemented for all four engines and connected to demos. True framebuffer displacement, palette inversion, moving-camera composition on fantasy consoles, native runtime verification, and measurements remain open.
+
+**Deliverable:** effects can be combined without leaving graphics state altered after drawing; each engine's ripple implementation is described and measured.
 
 ### 3. Pixel-based deformation and animation — `pixel_deform`
 

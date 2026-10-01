@@ -1,6 +1,7 @@
 -- VFX8 demo harness. Build this source before importing into TIC-80.
 --#include "demo_extension.lua"
 --#include "../../src/tic80/particles.lua"
+--#include "../../src/tic80/screen_fx.lua"
 
 local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d"}
 local qualities = {"low", "medium", "high"}
