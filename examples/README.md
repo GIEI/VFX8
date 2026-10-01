@@ -27,16 +27,16 @@ The demos use `#include`, `include()`, `require()`, and `--#include` respectivel
 
 ## Controls
 
-| Action | PICO-8 / Picotron | TIC-80 | LÖVE |
+| Action | PICO-8 | Picotron | TIC-80 | LÖVE |
 | --- | --- | --- | --- |
-| Previous/next module | Left / right | Left / right | Left / right arrow |
-| Previous/next profile | Up / down | Up / down | Up / down arrow |
-| Trigger at crosshair | O | A | Space or Z |
-| Compare effects on/off | X | B | X |
-| Next particle preset | Z | X | P |
-| Next emission shape | C | Y | M |
+| Previous/next module | Left / right | Left / right | Left / right | Left / right arrow |
+| Previous/next profile | Up / down | Up / down | Up / down | Up / down arrow |
+| Trigger at crosshair | O | O | A | Space or Z |
+| Compare effects on/off | — | X | B | X |
+| Next particle preset | X | Z | X | P |
+| Next emission shape | — | C | Y | M |
 
-The starting profile is `low`. Changing module or profile reinitializes the active slot; turning effects off calls `on_exit`, displays `FX DISABLED`, and leaves the scene unprocessed. With the particle module selected, trigger emits the selected preset using the selected shape. Shapes are point, horizontal line, and rectangular area.
+The starting profile is `low`. Changing module or profile reinitializes the active slot; turning effects off calls `on_exit`, displays `FX DISABLED`, and leaves the scene unprocessed. With the particle module selected, trigger emits the selected preset using the selected shape. Shapes are point, horizontal line, and rectangular area. PICO-8 has only two action buttons: `O` triggers emission and `X` cycles the preset; the demo keeps other options available through its source code.
 
 ## Connecting a module
 

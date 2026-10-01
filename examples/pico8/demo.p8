@@ -47,15 +47,8 @@ function _update60()
   quality=(quality+1)%3+1
   refresh_fx()
  end
- if btnp(5) then
-  fx_enabled=not fx_enabled
-  refresh_fx()
- end
- if keyp("z") and active and active.cycle_preset then active.cycle_preset() end
- if keyp("c") and active and active.cycle_shape then active.cycle_shape() end
- if btnp(4) and active and active.trigger then
-  active.trigger(64,67)
- end
+ if btnp(4) and active and active.trigger then active.trigger(64,67) end
+ if btnp(5) and active and active.cycle_preset then active.cycle_preset() end
  if active and active.update then active.update(1/60) end
 end
 
@@ -87,5 +80,5 @@ function _draw()
  local status=not fx_enabled and "fx disabled" or (active and "ready" or "not implemented")
  print(status,2,107,active and 11 or 6)
  print("<>:fx ^v:q",2,115,7)
- print("o:fire x:fx z:preset c:shape",2,122,7)
+ print("o:fire x:preset",2,122,7)
 end
