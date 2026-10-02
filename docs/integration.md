@@ -1,6 +1,6 @@
 # Integrating VFX8 into an existing game
 
-**Status:** `particles.lua` is implemented on all four engines. The examples below show its current include paths and public API; other effect modules will follow the same integration contract.
+**Status:** all seven modules, including `pseudo3d`, `flames`, and `electricity`, are implemented on all four engines. The examples below show the particle module's include path and API; each effect page documents the corresponding module-specific contract.
 
 VFX8 is a collection of selective modules. Developers include only the files they use. No module should define or replace `_init`, `_update`, `_update60`, `_draw`, `TIC`, or the game's `love.*` callbacks. The game retains its own lifecycle and explicitly calls the effect API, which will be documented on that effect's page in `docs/effects/`.
 

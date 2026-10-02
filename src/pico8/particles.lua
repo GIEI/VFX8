@@ -169,43 +169,50 @@ function p8_methods.update(self, dt)
   dt = dt or 1 / 60
   if dt < 0 then dt = 0 end
   if dt > 0.1 then dt = 0.1 end
+  local x, y, vx, vy = self.x, self.y, self.vx, self.vy
+  local ages, lives = self.age, self.life
+  local gravity, drag = self.gravity, self.drag
+  local sizes, end_sizes, kinds = self.size, self.end_size, self.kind
+  local count = self.count
   local i = 1
-  while i <= self.count do
-    local age = self.age[i] + dt
-    if age >= self.life[i] then
-      local last = self.count
-      self.x[i], self.y[i] = self.x[last], self.y[last]
-      self.vx[i], self.vy[i] = self.vx[last], self.vy[last]
-      self.age[i], self.life[i] = self.age[last], self.life[last]
-      self.size[i], self.end_size[i] = self.size[last], self.end_size[last]
-      self.gravity[i], self.drag[i], self.kind[i] = self.gravity[last], self.drag[last], self.kind[last]
-      self.count = last - 1
+  while i <= count do
+    local particle_age = ages[i] + dt
+    if particle_age >= lives[i] then
+      local last = count
+      x[i], y[i], vx[i], vy[i] = x[last], y[last], vx[last], vy[last]
+      ages[i], lives[i] = ages[last], lives[last]
+      sizes[i], end_sizes[i] = sizes[last], end_sizes[last]
+      gravity[i], drag[i], kinds[i] = gravity[last], drag[last], kinds[last]
+      count = last - 1
     else
-      local keep = 1 - self.drag[i] * dt
+      local keep = 1 - drag[i] * dt
       if keep < 0 then keep = 0 end
-      self.age[i] = age
-      self.vx[i] *= keep
-      self.vy[i] = self.vy[i] * keep + self.gravity[i] * dt
-      self.x[i] += self.vx[i] * dt
-      self.y[i] += self.vy[i] * dt
+      ages[i] = particle_age
+      vx[i] *= keep
+      vy[i] = vy[i] * keep + gravity[i] * dt
+      x[i] += vx[i] * dt
+      y[i] += vy[i] * dt
       i += 1
     end
   end
+  self.count = count
   self.last_emitted = self.frame_used
   self.frame_used = 0
 end
 
 function p8_methods.draw(self)
+  local x, y, ages, lives = self.x, self.y, self.age, self.life
+  local kinds, sizes, end_sizes = self.kind, self.size, self.end_size
   for i = 1, self.count do
-    local kind = p8_particle_presets[self.kind[i]]
-    local t = self.age[i] / self.life[i]
-    local col = kind.c1
-    if t >= 0.34 and t < 0.72 then col = kind.c2 end
-    if t >= 0.72 then col = kind.c3 end
-    local size = flr(self.size[i] + (self.end_size[i] - self.size[i]) * t + 0.5)
+    local preset = p8_particle_presets[kinds[i]]
+    local t = ages[i] / lives[i]
+    local col = preset.c1
+    if t >= 0.34 and t < 0.72 then col = preset.c2 end
+    if t >= 0.72 then col = preset.c3 end
+    local size = flr(sizes[i] + (end_sizes[i] - sizes[i]) * t + 0.5)
     if size > 0 then
-      local x, y = flr(self.x[i] + 0.5), flr(self.y[i] + 0.5)
-      rectfill(x, y, x + size - 1, y + size - 1, col)
+      local px, py = flr(x[i] + 0.5), flr(y[i] + 0.5)
+      rectfill(px, py, px + size - 1, py + size - 1, col)
     end
   end
 end

@@ -23,11 +23,17 @@ MCP_LUA = Path.home() / ".codex" / "mcp-servers" / "love2d-mcp" / "lua"
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mcp", action="store_true", help="enable the optional local love2d-mcp bridge")
+    parser.add_argument("--stage-only", action="store_true", help="prepare the runnable game folder without launching LÖVE")
     args = parser.parse_args()
 
     module = ROOT / "src" / "love2d" / "particles.lua"
     screen_module = ROOT / "src" / "love2d" / "screen_fx.lua"
-    for required in (module, screen_module):
+    deform_module = ROOT / "src" / "love2d" / "pixel_deform.lua"
+    palette_module = ROOT / "src" / "love2d" / "palette_fx.lua"
+    pseudo3d_module = ROOT / "src" / "love2d" / "pseudo3d.lua"
+    flames_module = ROOT / "src" / "love2d" / "flames.lua"
+    electricity_module = ROOT / "src" / "love2d" / "electricity.lua"
+    for required in (module, screen_module, deform_module, palette_module, pseudo3d_module, flames_module, electricity_module):
         if not required.is_file():
             print(f"Missing effect module: {required}", file=sys.stderr)
             return 1
@@ -49,6 +55,23 @@ def main() -> int:
     package.mkdir(parents=True, exist_ok=True)
     shutil.copy2(module, package / "particles.lua")
     shutil.copy2(screen_module, package / "screen_fx.lua")
+    shutil.copy2(deform_module, package / "pixel_deform.lua")
+    shutil.copy2(palette_module, package / "palette_fx.lua")
+    shutil.copy2(pseudo3d_module, package / "pseudo3d.lua")
+    shutil.copy2(flames_module, package / "flames.lua")
+    shutil.copy2(electricity_module, package / "electricity.lua")
+
+    required_staged = (BUILD / "main.lua", BUILD / "demo_extension.lua", package / "particles.lua", package / "screen_fx.lua", package / "pixel_deform.lua", package / "palette_fx.lua", package / "pseudo3d.lua", package / "flames.lua", package / "electricity.lua")
+    missing = [path for path in required_staged if not path.is_file()]
+    if missing:
+        print("Staging failed; required game files are missing:", file=sys.stderr)
+        for path in missing:
+            print(f"  {path}", file=sys.stderr)
+        return 1
+    if args.stage_only:
+        print(f"LOVE demo staged successfully: {BUILD}")
+        print(f"Launch that folder with LOVE, or rerun this script without --stage-only.")
+        return 0
 
     executable = os.environ.get("LOVE_EXECUTABLE") or shutil.which("love")
     if not executable:

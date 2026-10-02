@@ -6,10 +6,10 @@ The particle system provides compact, reusable feedback for impacts and movement
 
 | Engine | Module | Include method | Runtime verification |
 | --- | --- | --- | --- |
-| PICO-8 | `src/pico8/particles.lua` | `#include` | Static contract checks; native runtime not available in this environment |
-| Picotron | `src/picotron/particles.lua` | `include()` | Static contract checks; native runtime not available in this environment |
-| LÖVE | `src/love2d/particles.lua` | `require()` | Native runtime integration verified separately; rerun after source updates |
-| TIC-80 | `src/tic80/particles.lua` | build-time include | Include build and static contract checks; native runtime not available in this environment |
+| PICO-8 | `src/pico8/particles.lua` | `#include` | Native demo and 600-frame saturated-pool carts pass at low, medium, and high; one-run CPU comparison recorded |
+| Picotron | `src/picotron/particles.lua` | `include()` | Headless runtime smoke covers emission, update, and drawing; performance profiles remain unmeasured |
+| LÖVE | `src/love2d/particles.lua` | `require()` | Automated runtime contract and five-run typical/saturated CPU and heap benchmark pass on LÖVE 11.5 |
+| TIC-80 | `src/tic80/particles.lua` | build-time include | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
 
 The `low`, `medium`, and `high` settings are conservative starting budgets. They have not yet been benchmarked on their target engines; values are not performance measurements.
 
@@ -121,7 +121,7 @@ Profiles set the default pool and emission limits. Explicit capacity or `max_emi
 
 Particles are square filled pixels/sprites. Palette-index engines use fixed palette ramps per preset; LÖVE maps the same ramp to RGB values based on the PICO-8 palette. The module does not change camera, clip, or palette state. LÖVE restores the caller's draw color after rendering. `draw()` should run after the scene and before UI that must appear above effects.
 
-The implementation updates and draws at most the active pool capacity. The pool uses structure-of-arrays storage to avoid per-particle tables and avoids temporary allocations in update/draw. PICO-8 currently reserves eleven arrays up to its configured capacity; exact token, memory, and CPU costs have not been measured. Portable contract checks live in `tests/test_particle_contract.py`; TIC-80 include handling is tested in `tests/tic80/`. See `benchmarks/` when actual-engine measurements are added.
+The implementation updates and draws at most the active pool capacity. The pool uses structure-of-arrays storage to avoid per-particle tables and avoids temporary allocations in update/draw. Hot loops cache references to the pool arrays and active count in locals, reducing repeated instance-table lookups; dead particles are still removed by swapping the final active slot. LÖVE uses direct rectangle calls, which tested faster on this workload than rebuilding a SpriteBatch for each frame. Its 320×180 benchmark records update/draw CPU-call time and heap data for baseline, typical, and saturated loads; see the [LÖVE particle benchmark](../../benchmarks/results/love2d-particles.md). PICO-8 reserves eleven arrays up to its configured capacity. A saturated 600-frame PICO-8 run at each profile measured 5.06% / 7.82% / 10.44% CPU with the baseline implementation and 4.37% / 6.40% / 8.30% after local caching. These are single-run means, not repeated-run guarantees; method and ranges are in the [PICO-8 particle stress report](../../benchmarks/results/pico8-particles-stress.md). Token count, memory use, and saturated costs on Picotron and TIC-80 remain unmeasured. Portable contract checks live in `tests/test_particle_contract.py`; TIC-80 include handling is tested in `tests/tic80/`.
 
 ## Demo
 

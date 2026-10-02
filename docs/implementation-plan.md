@@ -2,13 +2,13 @@
 
 ## Goal and scope
 
-Build a collection of composable 2D visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. The first effect, an adaptive particle system, is implemented for all four engines; the remaining effects are planned.
+Build a collection of composable visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. All seven modules are implemented for all four engines. Picotron headless runtime smoke now covers each module's main update and draw path; interactive visual verification and benchmark measurements remain open.
 
 The first version will use Lua or each engine's Lua dialect and native drawing primitives. It will not require external assets, extra frameworks, or a mandatory shared runtime. Advanced capabilities will remain optional.
 
 ## Conventions to establish with the first implementation
 
-1. Use the five names `particles`, `screen_fx`, `pixel_deform`, `palette_fx`, and `pseudo3d` in `src/<engine>/`, `examples/<engine>/`, and `docs/effects/`. Each module gets one dedicated page covering its variants.
+1. Use the seven names `particles`, `screen_fx`, `pixel_deform`, `palette_fx`, `pseudo3d`, `flames`, and `electricity` in `src/<engine>/`, `examples/<engine>/`, and `docs/effects/`. Each module gets one dedicated page covering its variants.
 2. Keep a shared conceptual lifecycle: setup, trigger, update, and draw. The concrete syntax will be idiomatic for each engine and established with the first effect.
 3. Make coordinates, time units, and draw order explicit. Fixed-frame fantasy consoles and LÖVE's `dt` must not produce different durations because of implicit conversions.
 4. Avoid per-frame allocations where practical: use reusable pools, configurable capacity limits, and deterministic cleanup of expired items.
@@ -39,7 +39,7 @@ The order below is the development priority: first, feedback useful in almost an
 - **Budget:** fixed-capacity pool, per-update emission limit, active-item update limit, and explicit behavior when the pool is full.
 - **Scaling:** `low` uses few items and simple primitives; higher profiles increase density, trail samples, and detail within configured limits.
 
-**Status:** source implementations, demos, usage documentation, portable API contract checks, and TIC-80 include tests exist for all four engines. The module provides all five presets, three emission types, fixed-capacity pools, per-update emission caps, and `low`/`medium`/`high` profiles. Native cartridge verification and reproducible performance measurements remain incomplete; published limits are conservative starting values, not measured results.
+**Status:** source implementations, demos, usage documentation, portable API contract checks, and TIC-80 include tests exist for all four engines. The module provides all five presets, three emission types, fixed-capacity pools, per-update emission caps, and `low`/`medium`/`high` profiles. PICO-8 and LÖVE runtime contracts pass. The Picotron headless smoke test exercises emission, update, and drawing. PICO-8 saturated 600-frame measurements show 4.37% / 6.40% / 8.30% CPU after local-array/count caching, down from 5.06% / 7.82% / 10.44% in one baseline run per profile. LÖVE 11.5.0 now has a repeatable five-run benchmark for baseline, typical, and saturated pools, with update/draw timing and heap deltas. Token and memory costs, saturated measurements on Picotron and TIC-80, and interactive Picotron/TIC-80 verification remain open.
 
 **Deliverable:** all five presets and three emission types work in demos for supported engines; saturation does not exceed the declared work budget. This module establishes the shared interface and benchmark method.
 
@@ -50,7 +50,7 @@ The order below is the development priority: first, feedback useful in almost an
 - **Global flash:** temporary screen flash and color inversion, with a defined duration and restoration of the palette/graphics state. Pausing gameplay during a hit remains the application's choice.
 - **Scaling:** shake intensity and frequency; resolution, affected area, and sample/pass count for ripple and flash.
 
-**Status:** initial trauma shake, directional impulses, solid flash overlays, and bounded expanding ring cues are implemented for all four engines and connected to demos. True framebuffer displacement, palette inversion, moving-camera composition on fantasy consoles, native runtime verification, and measurements remain open.
+**Status:** trauma shake, directional impulses, solid flash overlays, bounded wave pools, and a cached shake-offset API for game-owned cameras are implemented for all four engines and connected to demos. LÖVE captures the scene into a reusable canvas and applies a shader ripple around the newest active wave; PICO-8, Picotron, and TIC-80 use the documented ring cue. PICO-8's `render()` composes shake with the active camera and restores it around screen-space overlays. For indexed scenes, `palette_fx` supports a timed negative-map flash using the game's RGB palette and explicit draw-call color mapping; the APIs do not alter global palette or framebuffer state. Native runtime verification and measurements remain open.
 
 **Deliverable:** effects can be combined without leaving graphics state altered after drawing; each engine's ripple implementation is described and measured.
 
@@ -61,6 +61,8 @@ The order below is the development priority: first, feedback useful in almost an
 - **Dissolve:** appearance/disappearance through dithering matrices, with checkerboard, spiral, and burn variants where the engine budget allows.
 - **Scaling:** rows/samples updated, transformed surface, animation steps, and pattern complexity.
 
+**Status:** deterministic coordinate-wave, squash/stretch scale, and 4×4 ordered/checker/spiral visibility helpers are implemented for all four engines and connected to demos. Native verification and performance measurements remain open; sprite raster integration remains game-owned by design.
+
 **Deliverable:** each variant has a demo showing the object before, during, and after the effect; transformations do not corrupt sprites, UI, or shared buffers.
 
 ### 4. Palette and color cycling — `palette_fx`
@@ -70,22 +72,47 @@ The order below is the development priority: first, feedback useful in almost an
 - **Scene filters:** day/night, sepia, and monochrome maps, with defined priority when multiple filters are active.
 - **Scaling:** number of colors or animated areas and update frequency. Measure cost and fidelity separately on indexed-palette engines and LÖVE, where the concrete technique may differ.
 
-**Deliverable:** multiple color effects can coexist, and disabling them restores the exact previous palette or color state.
+**Status:** all four engine modules and demo variants are implemented. The API maps colors at draw-call boundaries and does not change global palette state. Built-in filters cover 16 entries; custom maps are validated against the configured color count, including Picotron's 64-color range. Timed palette-negative mapping builds from caller-supplied RGB values and is included in the demo variants. Cycle shifts and pulse phases are cached during `update()`; a single PICO-8 stress run showed a small whole-workload reduction from 10.76% to 10.56% CPU for 128 map calls per frame. Native palette contracts pass on PICO-8 and LÖVE; Picotron and TIC-80 runtime validation is open.
+
+**Deliverable:** color cycles, local flashes, glow pulses, and scene filters work through explicit color mapping without leaving graphics state altered.
 
 ### 5. Pseudo-3D rasterizer — `pseudo3d`
 
-- **Perspective plane:** Mode 7-style ground or road with controllable camera and horizon.
+- **Perspective plane:** textured Mode 7 ground/road with camera heading and perspective; procedural curved bands remain the fallback.
 - **3D starfield:** stars at different depths, perspective projection, and multi-layer parallax.
-- **Projected sprites:** depth-based apparent scale, clipping, and Z ordering consistent with the plane.
+- **Projected sprites:** depth-based apparent scale, clipping, Z ordering, and a road-aligned projection helper consistent with the plane.
 - **Budget:** limit sampled rows/columns, draw distance, star count, and objects. Reuse projection tables when parameters are unchanged; avoid per-pixel work in the cautious profile unless measurements show it fits.
 
-**Deliverable:** one demo combines the plane, stars, and projected objects; all three profiles show visible quality differences and have measured costs. This module comes last because it requires the most projection work and verification.
+**Status:** all four modules include engine-specific Mode 7 texture paths, layered stars, and depth-sorted projected objects; `set_road()` configures the procedural fallback and `project_road()` provides road-aligned coordinates for game-owned sprites. PICO-8 uses `tline`, Picotron uses `tline3d`, TIC-80 samples sprite memory in quality-scaled blocks, and LÖVE uses a shader. The multi-effect demo builds a small checker road texture at runtime. PICO-8 coverage now scales with quality (55%/75%/100%) while filling the uncovered ground; five typical and five 600-frame saturated draw runs measure 20.22%/25.21%/30.53% and 20.84%/26.50%/33.04% CPU respectively. Other native runtime checks, saturated costs for the remaining effects, and PICO-8 token counts remain open.
 
-### Polish and initial release
+### 6. Flame simulation — `flames`
 
-- Test combinations of the five modules in one scene, checking draw order, palette priority, and graphics state.
-- Reduce benchmark regressions without compromising clarity or integration.
-- Prepare examples that can be copied into carts/projects and choose a license before public distribution.
+- **Directional jet:** a flamethrower stream emitted from an origin along a caller supplied vector.
+- **Campfire:** an upward plume continuously emitted around a base point.
+- **Budget:** fixed structure-of-arrays pools, profile-specific capacities, and per-update emission caps; expired particles are swap-removed. Both styles use gravity, drag, color ramps, and pixel contraction.
+- **API:** `new`, `emit_jet`, `emit_campfire`, `update`, `draw`, `clear`, and `stats`.
+
+**Status:** implemented for all four engines, with demo adapters and a dedicated effect page. Runtime and visual checks are in progress; measured costs and PICO-8 token checks remain open.
+
+**Deliverable:** both flame styles can be integrated without replacing game callbacks, and sustained emissions stay within each engine's pool and update budgets.
+
+### 7. Electric arcs — `electricity`
+
+- **Geometry:** fixed-endpoint jagged polyline with seeded irregular offsets and optional side branches. Every call to `strike()` selects a new deterministic shape without consuming the host game's random stream.
+- **Lifecycle:** generate segments on demand, expire them after a short lifetime, and remove expired entries with swap-delete.
+- **Budget:** preallocated segment and scratch-vertex arrays, quality-based subdivision/branch counts, and a hard per-update segment budget.
+
+**Status:** implemented for all four engines, added to each demo, and documented separately. LÖVE runtime contract passes; console native runtime verification and PICO-8 token budget remain open.
+
+**Deliverable:** a game can connect arbitrary event points with a brief bolt while bounding geometry generation, storage, and draw work.
+
+### Native verification, measurement, and release polish
+
+- Run every engine demo in its native runtime at all three profiles, beginning with PICO-8's source/token and CPU limits. **Progress:** TIC-80 1.2.0's showcase is user-confirmed working. Picotron's isolated headless smoke test passes all seven modules, their drawing paths, and both pseudo-3D render modes; interactive visual checks remain open. The PICO-8 profile cart records short typical-load `stat(1)` runs for a baseline and five effect slots at low/medium/high; separate Mode 7 stress carts measure 600 rendered frames with maximum profile stars and object pools. LÖVE 11.5 native API contracts pass; full visual demo and shader compilation checks remain open. Saturated costs for most effects, full token counts, and visual profile checks remain open. See [benchmark status](../benchmarks/README.md).
+- Test effect combinations where supported, checking draw order, palette priority, callbacks, and graphics state.
+- Record repeatable typical and saturated benchmark runs, including source/code costs and runtime versions.
+- Resolve engine-specific API differences found during native verification; mark unsupported behavior accurately in each effect page.
+- Prepare examples that can be copied into carts/projects; the repository uses the MIT license.
 - Publish a compatibility matrix with the minimum engine versions verified.
 
 ## Required page for each effect

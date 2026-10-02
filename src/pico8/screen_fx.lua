@@ -17,6 +17,8 @@ function vfx8_screen_fx.new(options)
     shake_y = 0,
     shake_time = 0,
     shake_duration = 0,
+    offset_x = 0,
+    offset_y = 0,
     flash_time = 0,
     flash_duration = 0,
     flash_color = 7,
@@ -28,6 +30,8 @@ function vfx8_screen_fx.new(options)
     impulse = methods.impulse,
     flash = methods.flash,
     shockwave = methods.shockwave,
+    get_shake_offset = methods.get_shake_offset,
+    draw_overlays = methods.draw_overlays,
     render = methods.render,
     clear = methods.clear
   }
@@ -68,6 +72,14 @@ function methods.update(self, dt)
   self.trauma = max(0, self.trauma - dt * 2.5)
   self.shake_time = max(0, self.shake_time - dt)
   self.flash_time = max(0, self.flash_time - dt)
+  self.seed = (self.seed * 17 + 31) % 251
+  local nx = self.seed / 251 - 0.5
+  self.seed = (self.seed * 17 + 31) % 251
+  local ny = self.seed / 251 - 0.5
+  local trauma = self.trauma * self.trauma
+  local decay = self.shake_duration > 0 and self.shake_time / self.shake_duration or 0
+  self.offset_x = (self.shake_x + nx * 2) * trauma * decay
+  self.offset_y = (self.shake_y + ny * 2) * trauma * decay
   local i = 1
   while i <= self.wave_count do
     local wave = self.waves[i]
@@ -82,31 +94,29 @@ function methods.update(self, dt)
   end
 end
 
-function methods.render(self, draw_scene)
-  self.seed = (self.seed * 17 + 31) % 251
-  local noise_x = self.seed / 251 - 0.5
-  self.seed = (self.seed * 17 + 31) % 251
-  local noise_y = self.seed / 251 - 0.5
-  local trauma = self.trauma * self.trauma
-  local decay = self.shake_duration > 0 and self.shake_time / self.shake_duration or 0
-  local dx = (self.shake_x + noise_x * 2) * trauma * decay
-  local dy = (self.shake_y + noise_y * 2) * trauma * decay
-  camera(flr(dx), flr(dy))
-  draw_scene()
-  camera()
+function methods.get_shake_offset(self)
+  return self.offset_x, self.offset_y
+end
 
+function methods.draw_overlays(self)
   for i = 1, self.wave_count do
     local wave = self.waves[i]
     local t = wave.age / wave.life
-    local radius = wave.radius + t * wave.strength * 8
-    local color = t < 0.5 and 7 or 6
-    circ(wave.x, wave.y, radius, color)
+    circ(wave.x, wave.y, wave.radius + t * wave.strength * 8, t < 0.5 and 7 or 6)
   end
-  if self.flash_time > 0 then
-    rectfill(0, 0, self.width - 1, self.height - 1, self.flash_color)
-  end
+  if self.flash_time > 0 then rectfill(0, 0, self.width - 1, self.height - 1, self.flash_color) end
+end
+
+function methods.render(self, draw_scene)
+  local camera_x, camera_y = peek2(0x5f28), peek2(0x5f2a)
+  camera(camera_x + flr(self.offset_x), camera_y + flr(self.offset_y))
+  draw_scene()
+  camera()
+  methods.draw_overlays(self)
+  camera(camera_x, camera_y)
 end
 
 function methods.clear(self)
   self.trauma, self.shake_time, self.flash_time, self.wave_count = 0, 0, 0, 0
+  self.offset_x, self.offset_y = 0, 0
 end

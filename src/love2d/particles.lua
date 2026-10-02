@@ -153,43 +153,52 @@ end
 
 function methods.update(self, dt)
   dt = math.max(0, math.min(dt or 1 / 60, 0.1))
+  local x, y, vx, vy = self.x, self.y, self.vx, self.vy
+  local ages, lives = self.age, self.life
+  local gravity, drag = self.gravity, self.drag
+  local sizes, end_sizes, kinds = self.size, self.end_size, self.kind
+  local count = self.count
   local i = 1
-  while i <= self.count do
-    local age = self.age[i] + dt
-    if age >= self.life[i] then
-      local last = self.count
-      self.x[i], self.y[i], self.vx[i], self.vy[i] = self.x[last], self.y[last], self.vx[last], self.vy[last]
-      self.age[i], self.life[i] = self.age[last], self.life[last]
-      self.size[i], self.end_size[i] = self.size[last], self.end_size[last]
-      self.gravity[i], self.drag[i], self.kind[i] = self.gravity[last], self.drag[last], self.kind[last]
-      self.count = last - 1
+  while i <= count do
+    local particle_age = ages[i] + dt
+    if particle_age >= lives[i] then
+      local last = count
+      x[i], y[i], vx[i], vy[i] = x[last], y[last], vx[last], vy[last]
+      ages[i], lives[i] = ages[last], lives[last]
+      sizes[i], end_sizes[i] = sizes[last], end_sizes[last]
+      gravity[i], drag[i], kinds[i] = gravity[last], drag[last], kinds[last]
+      count = last - 1
     else
-      local keep = math.max(0, 1 - self.drag[i] * dt)
-      self.age[i] = age
-      self.vx[i] = self.vx[i] * keep
-      self.vy[i] = self.vy[i] * keep + self.gravity[i] * dt
-      self.x[i] = self.x[i] + self.vx[i] * dt
-      self.y[i] = self.y[i] + self.vy[i] * dt
+      local keep = math.max(0, 1 - drag[i] * dt)
+      ages[i] = particle_age
+      vx[i] = vx[i] * keep
+      vy[i] = vy[i] * keep + gravity[i] * dt
+      x[i] = x[i] + vx[i] * dt
+      y[i] = y[i] + vy[i] * dt
       i = i + 1
     end
   end
+  self.count = count
   self.last_emitted = self.frame_used
   self.frame_used = 0
 end
 
 function methods.draw(self)
   local old_r, old_g, old_b, old_a = love.graphics.getColor()
+  local x, y, ages, lives = self.x, self.y, self.age, self.life
+  local kinds, sizes, end_sizes = self.kind, self.size, self.end_size
   for i = 1, self.count do
-    local preset = presets[self.kind[i]]
-    local t = self.age[i] / self.life[i]
+    local preset = presets[kinds[i]]
+    local t = ages[i] / lives[i]
     local color_index = preset.c1
     if t >= 0.34 and t < 0.72 then color_index = preset.c2 end
     if t >= 0.72 then color_index = preset.c3 end
     local rgb = palette[color_index + 1]
-    local size = math.floor(self.size[i] + (self.end_size[i] - self.size[i]) * t + 0.5)
+    local size = math.floor(sizes[i] + (end_sizes[i] - sizes[i]) * t + 0.5)
     if size > 0 then
+      local px, py = math.floor(x[i] + 0.5), math.floor(y[i] + 0.5)
       love.graphics.setColor(rgb[1], rgb[2], rgb[3], 1)
-      love.graphics.rectangle("fill", math.floor(self.x[i] + 0.5), math.floor(self.y[i] + 0.5), size, size)
+      love.graphics.rectangle("fill", px, py, size, size)
     end
   end
   love.graphics.setColor(old_r, old_g, old_b, old_a)
