@@ -9,7 +9,7 @@ Four engine demo environments let you try VFX8 modules with `low`, `medium`, and
 | PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), and [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, or flames and electricity. Each includes only the modules it uses. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
 | Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/*.lua` | Put the files in the cartridge root and copy the implemented modules from `src/picotron/` to `vfx8/`; run with Ctrl+R. |
 | LÖVE | [`love2d/stage_demo.py`](love2d/stage_demo.py) | Run `python examples/love2d/stage_demo.py` from the repository root; the script stages the source module and launches LÖVE. |
-| TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file first, import it into a Lua cartridge, then use `run`. |
+| TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file, import the generated source into a Lua cartridge, then use `run`. The user-confirmed native test used this compiled showcase and all seven effects worked. |
 
 Do not pass `examples/love2d/main.lua` directly to `love.exe`. LÖVE loads a game folder, and the source example depends on modules that the staging script copies into `examples/love2d/build/vfx8/`. To prepare and launch it, run `python examples/love2d/stage_demo.py` from the repository root. To prepare the folder without opening a window, add `--stage-only`; then launch `examples/love2d/build/` with LÖVE.
 
@@ -17,13 +17,13 @@ Do not pass `examples/love2d/main.lua` directly to `love.exe`. LÖVE loads a gam
 
 After restarting Codex to load `love2d-mcp`, run `python examples/love2d/stage_demo.py --mcp` to launch the demo with its local MCP bridge. The bridge listens only on `127.0.0.1:21110`. The MCP provides game screenshots, state inspection, Lua execution in a sandbox, simulated input, pause/resume, frame stepping, and hot reload. The demo state is available under `VFX8_DEMO_STATE`. Run without `--mcp` for the regular demo without a network listener.
 
-For TIC-80, run this command from the repository root:
+For TIC-80, build a self-contained Lua source file from the repository root:
 
 ```text
 python tools/tic80_include.py examples/tic80/demo.lua -o examples/tic80/build/demo.lua
 ```
 
-The path passed to `import code` must be visible from the TIC-80 console's working directory. Use `folder` in TIC-80 to open that directory, copy `examples/tic80/build/demo.lua` there, then run `import code demo.lua` and `run`. For Picotron, put both files at the cartridge root because `main.lua` is the entry point.
+To create a native `.tic` cartridge, open TIC-80, enter `folder` to open its working directory, copy `examples/tic80/build/demo.lua` there, then run `import code demo.lua` and `run`. Once the demo is running, use `save vfx8-demo.tic` to save the complete cartridge. The resulting `.tic` contains the expanded Lua code; no source files or include paths are needed at runtime. For Picotron, put both files at the cartridge root because `main.lua` is the entry point.
 
 PICO-8 uses `#include` to load the modules required by each focused cart. Picotron, LÖVE, and TIC-80 use `include()`, `require()`, and `--#include` with their demo adapters. For a production game, include only the modules needed to preserve code space. The same mechanisms for adding effects to an **existing game** are described in [`docs/integration.md`](../docs/integration.md).
 

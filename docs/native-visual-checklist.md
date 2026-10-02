@@ -7,9 +7,9 @@ This checklist covers interactive appearance, controls, draw order, and state re
 | Engine | Runtime observed | Automated coverage | Visual review |
 | --- | --- | --- | --- |
 | PICO-8 | Version unavailable from the runtime bridge | Core and advanced profile contracts pass at low, medium, and high. The three showcase carts and standalone electricity cart pass clean boot checks. | Pending. Interactive lockstep startup timed out; screenshots and control navigation were unavailable. |
-| Picotron | 0.3.0d, build 260527-061316 | Native headless smoke passes for all seven effects, covered variants, and low/medium/high. Textured and fallback pseudo-3D drawing are exercised. | Pending. The smoke test checks draw calls, not the composed window. |
+| Picotron | 0.3.0d, build 260527-061316; user-tested native demo | User confirms all seven effects work in the native demo. Automated smoke also covers update/draw variants at low/medium/high and both pseudo-3D texture and fallback paths. | Functional check complete. No native screenshot or separate visual profile record is stored. |
 | LÖVE | 11.5.0 | Portable source contracts pass. Direct runtime startup fails while initializing the user filesystem; the local `love2d-mcp` endpoint is not running. | Pending. |
-| TIC-80 | 1.2.0, user-confirmed | Portable source and include-build checks pass. The user previously confirmed that the demo runs. | Pending for this release pass. No native visual capture or profile-by-profile result is recorded. |
+| TIC-80 | 1.2.0, user-confirmed | Portable source and include-build checks pass. The user imported and ran the self-contained compiled showcase and confirmed that all seven effects work. | Functional visual check complete for the showcase. No native capture or separate profile-by-profile record is stored. |
 
 ## Manual run checklist
 

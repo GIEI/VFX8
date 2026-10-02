@@ -19,6 +19,7 @@ $passed = $false
 try {
   New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
   Copy-Item (Join-Path $repoRoot "src\picotron\*.lua") $moduleDir -Force
+  Copy-Item (Join-Path $repoRoot "examples\picotron\demo_extension.lua") (Join-Path (Split-Path -Parent $moduleDir) "demo_extension.lua") -Force
   Push-Location $repoRoot
   try {
     $output = & $PicotronExe -home $testHome -x $smokePath 2>&1

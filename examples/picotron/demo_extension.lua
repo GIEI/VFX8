@@ -1,4 +1,5 @@
-local fx = {}
+-- Picotron include() executes this file as a separate chunk, so the main cart needs a global adapter table.
+fx = {}
 local particles, preset, shape = nil, "explosion", "point"
 local presets = {"explosion", "sparks", "trail", "smoke", "dust"}
 local shapes = {"point", "line", "area"}

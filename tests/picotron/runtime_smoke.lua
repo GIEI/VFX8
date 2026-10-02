@@ -9,6 +9,12 @@ include("/desktop/vfx8-picotron-runtime/vfx8/palette_fx.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/pseudo3d.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/flames.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/electricity.lua")
+include("/desktop/vfx8-picotron-runtime/demo_extension.lua")
+
+assert(type(fx) == "table", "demo extension did not expose its effect adapter")
+for index = 1, 7 do
+  assert(type(fx[index]) == "table", "demo extension is missing effect adapter " .. index)
+end
 
 local dt = 1 / 60
 local qualities = {"low", "medium", "high"}
