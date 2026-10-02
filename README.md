@@ -33,7 +33,7 @@ The implemented modules follow the short-name convention across source, demos, a
 
 ## Try the demo scenes
 
-Four demos are available, one per engine, with module selection, `low`/`medium`/`high` profiles, a particle trigger at the crosshair, and an effects on/off comparison. Startup instructions are in [`examples/README.md`](examples/README.md).
+Four engine demo environments are available with `low`/`medium`/`high` profiles and effect triggers. PICO-8 uses focused carts for the core effects, pseudo-3D, and flames/electricity to stay below its 8,192-token cap. Startup instructions are in [`examples/README.md`](examples/README.md).
 
 To include only the effects you need in an **existing game or cartridge**, follow the [integration guide](docs/integration.md). The engines use `#include`, `include()`, `require()`, or a pre-import include expansion for TIC-80. Effects must not replace the game's main loop.
 
@@ -109,14 +109,16 @@ Technical choices will be checked against official documentation: [PICO-8](https
 
 | Engine | Source/API review | Demo build | Native runtime | Measured profiles |
 | --- | --- | --- | --- | --- |
-| PICO-8 | Source and API contract checks pass | Standalone electric arc cart boots cleanly | Electric arc demo and contract cart boot; full showcase currently exceeds the 8,192-token limit | Not measured |
+| PICO-8 | Source and API contract checks pass | Three focused showcase carts fit the token limit | Core, pseudo-3D, flames/electricity, and standalone electric carts boot cleanly | Showcase code tokens measured; see [token report](benchmarks/results/pico8-showcase-token-budget.md) |
 | Picotron | Portable source/API contracts pass | Include layout prepared | Headless runtime smoke passes for all seven modules, including draw calls; interactive demo visuals remain unchecked | Not measured |
-| LÖVE | Portable source/API contracts pass | Staging script passes | LÖVE 11.5 MCP smoke checks pass; standalone runner blocked by sandbox filesystem initialization | Not measured |
+| LÖVE | Portable source/API contracts pass | Staging script passes | LÖVE 11.5 is installed; native launch fails during filesystem initialization and the local MCP endpoint is offline | Not measured |
 | TIC-80 | Portable source/API contracts pass | Include expansion tests pass | User-confirmed working demo on TIC-80 1.2.0; per-profile measurements pending | Not measured |
 
 “Implemented” describes source and demo adapters; it does not imply that every runtime or performance gate has passed. See [benchmark status and procedure](benchmarks/README.md). Record engine versions and profile measurements as they become available.
 
 See the [public release checklist](docs/release-checklist.md) for the remaining runtime, performance, packaging, and publication work.
+
+Run portable contracts and available native runtime checks with [`tests/run-regression.ps1`](tests/run-regression.ps1). See [`tests/README.md`](tests/README.md) for coverage, runtime requirements, and skip behavior. The portable regression path runs in GitHub Actions.
 
 ## Contributing
 

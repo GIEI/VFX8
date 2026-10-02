@@ -20,4 +20,4 @@ Each profile uses the same stress cart and particle counts for the baseline and 
 
 Run `tests/pico8/particle_stress_<profile>.p8` with the PICO-8 runtime bridge for the optimized measurement. Each cart emits a `VFX8_PARTICLE_STRESS` record after 600 frames. To reproduce the baseline, provide `git show 482f1b15ed8f281ad23f93b6747c34418eff1e0c:src/pico8/particles.lua` to the same carts in place of the current module; keep the stress helper and profile parameters unchanged.
 
-These are single-run samples. Repeat each run at least five times before using the percentage changes as representative performance claims. Token count, memory use, and measurements on Picotron, TIC-80, and LÖVE are unavailable.
+These are single-run samples. Repeat each run at least five times before using the percentage changes as representative performance claims. Showcase cart token budgets are now recorded separately; standalone per-module token counts, memory use, and measurements on Picotron and TIC-80 remain unavailable. LÖVE particle measurements are recorded in [the repeated benchmark report](love2d-particles.md).

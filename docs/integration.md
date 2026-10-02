@@ -24,7 +24,7 @@ function _draw()
 end
 ```
 
-`#include` expands the source when the cartridge starts; included files count toward the usual code and token limits. The path is relative to the `.p8` file. Includes are not recursive, so declare any dependencies directly in the cartridge. The [PICO-8 demo](../examples/pico8/demo.p8) already uses this pattern with `demo_extension.lua`.
+`#include` expands the source when the cartridge starts; included files count toward the usual code and token limits. The path is relative to the `.p8` file. Includes are not recursive, so declare any dependencies directly in the cartridge. The [PICO-8 core showcase](../examples/pico8/demo.p8) uses this pattern for its four modules; separate [pseudo-3D](../examples/pico8/pseudo3d_demo.p8) and [flames/electricity](../examples/pico8/flames_electricity_demo.p8) carts keep their source budgets below the console limit.
 
 ## Picotron — cartridge `include()`
 

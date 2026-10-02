@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | PICO-8 | `src/pico8/pseudo3d.lua` | `#include` | Native smoke cart exercises `tline` Mode 7 drawing at low, medium, and high; short CPU timing recorded; visual profile checks and token counts pending |
 | Picotron | `src/picotron/pseudo3d.lua` | `include()` | Headless runtime smoke covers projection and untextured drawing; Mode 7 texture path still needs visual verification |
-| LÖVE | `src/love2d/pseudo3d.lua` | `require()` | Native API contract passes with real image userdata; shader compilation and visual demo verification pending |
+| LÖVE | `src/love2d/pseudo3d.lua` | `require()` | Portable source contract passes; native startup is currently blocked by filesystem initialization, so shader compilation and visual demo verification remain pending |
 | TIC-80 | `src/tic80/pseudo3d.lua` | build-time include | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated Mode 7 regression pending |
 
 ## Include only this module

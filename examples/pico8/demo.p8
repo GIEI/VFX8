@@ -1,144 +1,112 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
--- vfx8 demo harness; effects are loaded from demo_extension.lua.
--- pico-8 expands this at cartridge boot, like a c-style include.
-#include demo_extension.lua
+-- VFX8 compact showcase for core effects.
 #include ../../src/pico8/particles.lua
 #include ../../src/pico8/screen_fx.lua
 #include ../../src/pico8/pixel_deform.lua
 #include ../../src/pico8/palette_fx.lua
-#include ../../src/pico8/pseudo3d.lua
-#include ../../src/pico8/flames.lua
-#include ../../src/pico8/electricity.lua
 
-names={"particles","screen fx","pixel warp","palette fx","pseudo 3d","flames","electricity"}
-qualities={"low","medium","high"}
-selected=1
-quality=1
-fx_enabled=true
-active=nil
-tick=0
-wave_time=0
-wave_samples={}
-
-function scene_color(index)
- if active and active.map_color then return active.map_color(index) end
- return index
+local names={"particles","screen fx","pixel warp","palette fx"}
+local quality_names={"low","medium","high"}
+local selected,quality,tick=1,1,0
+local system=nil
+local particle_preset,shape="explosion",1
+local preset_names={"explosion","sparks","trail","smoke","dust"}
+local particle_mode=1
+local rotate_grid=false
+local wave_time=0
+local wave_samples_x,wave_samples_y={},{}
+local palette_mode=1
+local palette_names={"color cycle","night filter","sepia filter","mono filter","glow pulse","negative flash"}
+local colors={{0,0,0},{0.114,0.169,0.325},{0.494,0.145,0.325},{0,0.529,0.318},{0.671,0.322,0.212},{0.373,0.341,0.31},{0.761,0.765,0.78},{1,0.945,0.91},{1,0.004,0.278},{1,0.639,0},{1,0.925,0.153},{0,0.894,0.165},{0.161,0.678,1},{0.514,0.463,0.616},{1,0.467,0.659},{1,0.8,0.667}}
+local function exit_effect()
+ if system and system.clear then system:clear() end
+ system=nil
 end
-
-function refresh_fx()
- if active and active.on_exit then active.on_exit() end
- active=nil
- if fx_enabled then
-  active=fx[selected]
-  if active and active.on_enter then
-   active.on_enter(qualities[quality])
-  end
- end
-end
-
-function _init()
- refresh_fx()
-end
-
-function _update60()
- tick=(tick+1)%240
- wave_time+=1/60
- if btnp(0) then
-  selected=(selected+5)%7+1
-  refresh_fx()
- end
- if btnp(1) then
-  selected=selected%7+1
-  refresh_fx()
- end
- if btnp(2) then
-  quality=quality%3+1
-  refresh_fx()
- end
- if btnp(3) then
-  quality=(quality+1)%3+1
-  refresh_fx()
- end
- if btnp(4) and active and active.trigger then active.trigger(64,67) end
- if btnp(5) and active then
-  if active.cycle_variant then active.cycle_variant()
-  elseif active.cycle_preset then active.cycle_preset() end
- end
- if active and active.update then active.update(1/60) end
-end
-
-function draw_scene()
- local x=24+tick%80
- if active and active.prepare_rotation then active.prepare_rotation(wave_time,x,67) end
- local rotating=active and active.rotation_enabled and active.rotation_enabled()
- local min_x,min_y,max_x,max_y=0,28,127,103
- if rotating then min_x,min_y,max_x,max_y=active.rotation_bounds(0,28,127,103,8) end
- local grid_x,grid_y=flr(min_x/16)*16,28+flr((min_y-28)/16)*16
- local wave_x=flr(min_x/4)*4
- local wave_count=flr((max_x-wave_x+3)/4)
- cls(scene_color(1))
- rectfill(0,28,127,103,scene_color(2))
- clip(0,28,128,76)
- for gx=grid_x,max_x,16 do
-  local x1,y1=gx,min_y
-  local x2,y2=gx,max_y
-  if rotating then x1,y1=active.rotate_point(x1,y1); x2,y2=active.rotate_point(x2,y2) end
-  line(x1,y1,x2,y2,scene_color(13))
- end
- if active and active.wave_offset then
-  for i=0,wave_count do wave_samples[i]=active.wave_offset(wave_x+i*4,wave_time) end
- end
- for y=grid_y,max_y,16 do
-  if active and active.wave_offset then
-   for i=0,wave_count-1 do
-    local x1,y1=wave_x+i*4,y+wave_samples[i]
-    local x2,y2=x1+4,y+wave_samples[i+1]
-    if rotating then x1,y1=active.rotate_point(x1,y1); x2,y2=active.rotate_point(x2,y2) end
-    line(x1,y1,x2,y2,scene_color(13))
-   end
-  else
-   local x1,y1,x2,y2=min_x,y,max_x,y
-   if rotating then x1,y1=active.rotate_point(x1,y1); x2,y2=active.rotate_point(x2,y2) end
-   line(x1,y1,x2,y2,scene_color(13))
-  end
- end
- clip()
- rectfill(0,96,127,103,scene_color(3))
- if active and active.scale then
-  local sx,sy=active.scale()
-  local w,h=flr(7*sx),flr(7*sy)
-  local px,py=x-3+(7-w)/2,64+(7-h)/2
-  for iy=0,h-1 do for ix=0,w-1 do
-   if active.visible(px+ix,py+iy,(tick%120)/120) then
-    rectfill(px+ix,py+iy,px+ix,py+iy,scene_color(8))
-   end
-  end end
- else rectfill(x-3,64,x+3,70,scene_color(8)) end
- local x1,y1,x2,y2=59,67,69,67
- line(x1,y1,x2,y2,scene_color(7))
- x1,y1,x2,y2=64,62,64,72
- line(x1,y1,x2,y2,scene_color(7))
-end
-
-function _draw()
- if active and active.draw_scene then
-  active.draw_scene()
- elseif active and active.render_scene then
-  active.render_scene(draw_scene)
+local function enter_effect()
+ exit_effect()
+ if selected==1 then system=vfx8_particles.new({quality=quality_names[quality]})
+ elseif selected==2 then system=vfx8_screen_fx.new({width=128,height=128,capacity=quality==3 and 8 or 4})
+ elseif selected==3 then system=vfx8_pixel_deform.new({quality=quality_names[quality]}); rotate_grid=false
  else
-  draw_scene()
+  system=vfx8_palette_fx.new({quality=quality_names[quality],color_count=16})
+  system:set_invert_palette(colors)
+  system:set_cycle(8,11,2)
  end
- if active and active.draw then active.draw() end
- rectfill(0,0,127,27,0)
- print("vfx8 demo",2,2,7)
- print(names[selected],2,9,10)
- if active and active.label then print(active.label(),2,25,11) end
- print("q:"..qualities[quality].." fx:"..(fx_enabled and "on" or "off"),2,17,7)
- rectfill(0,105,127,127,0)
- local status=not fx_enabled and "fx disabled" or (active and "ready" or "not implemented")
- print(status,2,107,active and 11 or 6)
- print("<>:fx ^v:q",2,115,7)
- print("o:fire x:variant/preset",2,122,7)
+end
+local function map_color(i) if selected==4 and system then return system:map_color(i) end return i end
+local function cache_waves()
+ if selected~=3 then return end
+ wave_time=(tick%120)/60
+ for y=28,108,8 do wave_samples_x[y]=system:wave_offset(y,wave_time,3.5,48,0.5) end
+ for x=0,128,8 do wave_samples_y[x]=system:wave_offset(x,wave_time,2.5,48,0.5) end
+end
+function _init() enter_effect() end
+function _update60()
+ tick+=1
+ if btnp(0) then selected=(selected+2)%4+1; enter_effect() end
+ if btnp(1) then selected=selected%4+1; enter_effect() end
+ if btnp(2) then quality=quality%3+1; enter_effect() end
+ if btnp(3) then quality=(quality+1)%3+1; enter_effect() end
+ if btnp(4) then
+  if selected==1 then
+   if shape==2 then system:emit_line(particle_preset,52,64,76,64,{spread=2})
+   elseif shape==3 then system:emit_area(particle_preset,54,58,20,12)
+   else system:emit(particle_preset,64,64) end
+  elseif selected==2 then system:add_trauma(0.8); system:impulse(3,1,0.18); system:flash(0.06,7); system:shockwave(64,64,2,8,0.28)
+  elseif selected==3 then system:set_squash(1.35,0.68,0.3)
+  elseif palette_mode==6 then system:invert(0.18) else system:flash(8,11,7,0.18) end
+ end
+ if btnp(5) then
+  if selected==1 then
+   particle_mode=particle_mode%15+1
+   particle_preset=preset_names[flr((particle_mode-1)/3)+1]
+   shape=(particle_mode-1)%3+1
+  elseif selected==2 then system:add_trauma(0.25)
+  elseif selected==3 then rotate_grid=not rotate_grid
+  else
+   palette_mode=palette_mode%6+1; system:clear_cycle(); system:clear_filter(); system:clear_invert(); system:set_pulse(-1,-1,0)
+   if palette_mode==1 then system:set_cycle(8,11,2)
+   elseif palette_mode==2 then system:set_filter("night")
+   elseif palette_mode==3 then system:set_filter("sepia")
+   elseif palette_mode==4 then system:set_filter("mono")
+   elseif palette_mode==5 then system:set_pulse(8,10,4) end
+  end
+ end
+ system:update(1/60)
+ cache_waves()
+end
+local function deform_point(x,y)
+ return system:rotate_point(x+(wave_samples_x[y] or 0),y+(wave_samples_y[x] or 0))
+end
+local function grid()
+ cls(map_color(1)); rectfill(0,28,127,103,map_color(2)); clip(0,28,128,76)
+ local actor_x=24+tick%80
+ if selected==3 then
+  system:set_rotation(actor_x,64,rotate_grid and (tick%180)*0.035 or 0)
+  for x=0,128,16 do for y=28,100,8 do
+   local x1,y1=deform_point(x,y); local x2,y2=deform_point(x,y+8)
+   line(x1,y1,x2,y2,map_color(13))
+  end end
+  for y=28,104,16 do for x=0,120,8 do
+   local x1,y1=deform_point(x,y); local x2,y2=deform_point(x+8,y)
+   line(x1,y1,x2,y2,map_color(13))
+  end end
+ else
+  for x=0,128,16 do line(x,28,x,103,map_color(13)) end
+  for y=28,104,16 do line(0,y,127,y,map_color(13)) end
+ end
+ rectfill(0,96,127,103,map_color(3)); clip()
+ rectfill(actor_x-3,61,actor_x+3,67,map_color(8)); line(59,64,69,64,map_color(7)); line(64,59,64,69,map_color(7))
+end
+function _draw()
+ if selected==2 then system:render(grid) else grid() end
+ if selected==1 then system:draw() elseif selected==4 and palette_mode==1 then
+  local c=({8,9,10,11})[1+tick%4]; circfill(100,64,5,c)
+ end
+ rectfill(0,0,127,27,0); print("vfx8 core demo",2,2,7); print(names[selected],2,9,10)
+ local label=selected==1 and (particle_preset.." / "..({"point","line","area"})[shape]) or (selected==3 and (rotate_grid and "wave + line rotation" or "wave only") or (selected==4 and palette_names[palette_mode] or "trauma shake + distortion"))
+ print(label,2,17,7); print(quality_names[quality].."  O: trigger",2,25,6)
+ rectfill(0,105,127,127,0); print("READY",2,108,11); print("< > effect  ^ v quality",2,117,7); print("X: variant / preset",2,124,7)
 end

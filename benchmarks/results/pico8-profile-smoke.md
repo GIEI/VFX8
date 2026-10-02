@@ -4,7 +4,7 @@
 - Runtime version: unavailable from the runtime bridge
 - Host CPU / device: unavailable from the runtime bridge
 - Run mode: headless `pico8 -x` through the runtime bridge
-- Cartridge: `tests/pico8/profile_contract.p8`
+- Cartridge: legacy combined profile harness; its correctness checks are now split between `tests/pico8/profile_contract.p8` and `tests/pico8/profile_contract_advanced.p8` so each cart fits the PICO-8 token cap
 - Screen viewport: 128×128; pseudo-3D logical viewport: 128×96
 - Repetitions: 5 clean launches
 - Samples: 10 steady draw frames per scenario per launch; 2 initial frames discarded; 50 measured frames per table cell
@@ -12,6 +12,8 @@
 - Vsync / frame cap: not reported by the runtime bridge
 
 `stat(1)` reports PICO-8 CPU load as a fraction of its VM budget ([PICO-8 manual](https://www.lexaloffle.com/dl/docs/pico-8_manual.html#CPU)). Values below are percentages. They include the benchmark cart's small status label and the scene/effect draw calls. The baseline draws the same simple field used by the screen, deformation, and palette slots. The particle slot draws the field plus one explosion. The pseudo-3D slot replaces the field with its own Mode 7 road, stars, and one projected object, so its baseline comparison is not scene-equivalent.
+
+These measurements are retained as historical results from the combined benchmark harness. They were captured before the split; the two current profile contract carts verify native setup, update, and drawing across all quality settings but do not emit comparable CPU samples. Refresh this table with a token-safe benchmark harness before using it as release sign-off.
 
 | Profile | Scenario | Median run mean CPU | Observed sample range |
 | --- | --- | ---: | ---: |

@@ -168,7 +168,7 @@ class ParticleContractTests(unittest.TestCase):
         for demo in ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua"):
             with self.subTest(demo=demo):
                 source = (ROOT / "examples" / demo).read_text(encoding="utf-8")
-                self.assertIn("scene_color", source)
+                self.assertIn("map_color" if demo == "pico8/demo.p8" else "scene_color", source)
 
     def test_pseudo3d_contract_and_all_demo_slots_exist(self) -> None:
         constructors = {"pico8": "vfx8_pseudo3d.new", "picotron": "vfx8_pseudo3d.new", "tic80": "vfx8_pseudo3d.new", "love2d": "pseudo3d.new"}
@@ -193,10 +193,10 @@ class ParticleContractTests(unittest.TestCase):
                 else:
                     self.assertIn("draw_colors = {}", module)
                     self.assertNotIn("options.sky or {", module)
-        for demo in ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
+        for demo in ("pico8/pseudo3d_demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
             with self.subTest(demo=demo):
                 source = (ROOT / "examples" / demo).read_text(encoding="utf-8")
-                self.assertIn("active.draw_scene", source)
+                self.assertIn("road:draw" if demo == "pico8/pseudo3d_demo.p8" else "active.draw_scene", source)
         doc = (ROOT / "docs" / "effects" / "pseudo3d.md").read_text(encoding="utf-8")
         self.assertIn("## Support status", doc)
         self.assertIn("PICO-8", doc)
@@ -261,7 +261,7 @@ class ParticleContractTests(unittest.TestCase):
         self.assertIn("### `emit_jet", doc)
         self.assertIn("### `emit_campfire", doc)
         self.assertIn("nem", doc.lower())
-        for demo in ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
+        for demo in ("pico8/flames_electricity_demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
             with self.subTest(demo=demo):
                 self.assertIn('"flames"', (ROOT / "examples" / demo).read_text(encoding="utf-8"))
         stage = (ROOT / "examples" / "love2d" / "stage_demo.py").read_text(encoding="utf-8")
@@ -284,17 +284,29 @@ class ParticleContractTests(unittest.TestCase):
         doc = (ROOT / "docs" / "effects" / "electricity.md").read_text(encoding="utf-8")
         self.assertIn("### `strike", doc)
         self.assertIn("PICO-8", doc)
-        for demo in ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
+        for demo in ("pico8/flames_electricity_demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua"):
             with self.subTest(demo=demo):
                 self.assertIn('"electricity"', (ROOT / "examples" / demo).read_text(encoding="utf-8"))
         stage = (ROOT / "examples" / "love2d" / "stage_demo.py").read_text(encoding="utf-8")
         self.assertIn('package / "electricity.lua"', stage)
 
-    def test_pico8_profile_smoke_cart_covers_seven_effects_and_profiles(self) -> None:
+    def test_pico8_core_profile_cart_covers_core_effects_and_profiles(self) -> None:
         cart = (ROOT / "tests" / "pico8" / "profile_contract.p8").read_text(encoding="utf-8")
-        self.assertIn("if slot_index>7", cart)
-        self.assertIn("assert(completed==24", cart)
-        self.assertIn("#include ../../src/pico8/electricity.lua", cart)
+        for module in ("particles", "screen_fx", "pixel_deform", "palette_fx"):
+            with self.subTest(module=module):
+                self.assertIn(f"#include ../../src/pico8/{module}.lua", cart)
+        for quality in ("low", "medium", "high"):
+            self.assertIn(f'"{quality}"', cart)
+        self.assertIn("VFX8_CORE_PROFILE_CONTRACT,PASS", cart)
+
+    def test_pico8_advanced_profile_cart_covers_remaining_effects(self) -> None:
+        cart = (ROOT / "tests" / "pico8" / "profile_contract_advanced.p8").read_text(encoding="utf-8")
+        for module in ("pseudo3d", "flames", "electricity"):
+            with self.subTest(module=module):
+                self.assertIn(f"#include ../../src/pico8/{module}.lua", cart)
+        for quality in ("low", "medium", "high"):
+            self.assertIn(f'"{quality}"', cart)
+        self.assertIn("VFX8_ADVANCED_PROFILE_CONTRACT,PASS", cart)
 
     def test_pico8_electricity_contract_cart_exists(self) -> None:
         cart = (ROOT / "tests" / "pico8" / "electricity_contract.p8").read_text(encoding="utf-8")
@@ -305,15 +317,15 @@ class ParticleContractTests(unittest.TestCase):
         self.assertIn("#include ../../src/pico8/electricity.lua", demo)
         self.assertIn("O: STRIKE", demo)
 
-    def test_pico8_profile_smoke_cart_covers_all_effects_and_profiles(self) -> None:
+    def test_pico8_showcase_carts_include_only_their_effect_groups(self) -> None:
         cart = (ROOT / "tests" / "pico8" / "profile_contract.p8").read_text(encoding="utf-8")
-        for quality in ("low", "medium", "high"):
-            self.assertIn(f'"{quality}"', cart)
-        self.assertIn("active_fx=fx[slot_index]", cart)
-        self.assertIn("if slot_index>7", cart)
-        self.assertIn('slot_index==0 and "base"', cart)
-        self.assertIn("assert(completed==24", cart)
-        self.assertIn("set_mode7", (ROOT / "examples" / "pico8" / "demo_extension.lua").read_text(encoding="utf-8"))
+        advanced = (ROOT / "tests" / "pico8" / "profile_contract_advanced.p8").read_text(encoding="utf-8")
+        self.assertNotIn("pseudo3d.lua", cart)
+        self.assertNotIn("flames.lua", cart)
+        self.assertNotIn("electricity.lua", cart)
+        for module in ("pseudo3d.lua", "flames.lua", "electricity.lua"):
+            self.assertIn(module, advanced)
+        self.assertIn("#include ../../src/pico8/pseudo3d.lua", (ROOT / "examples" / "pico8" / "pseudo3d_demo.p8").read_text(encoding="utf-8"))
 
     def test_pico8_pseudo3d_stress_carts_cover_profile_limits(self) -> None:
         helper = (ROOT / "tests" / "pico8" / "pseudo3d_stress.lua").read_text(encoding="utf-8")
@@ -351,6 +363,12 @@ class ParticleContractTests(unittest.TestCase):
         for demo in demos:
             with self.subTest(demo=demo):
                 source = (ROOT / "examples" / demo).read_text(encoding="utf-8")
+                if demo == "pico8/demo.p8":
+                    self.assertIn("wave_samples_x", source)
+                    self.assertIn("wave_samples_y", source)
+                    self.assertIn("wave_time", source)
+                    self.assertIn("system:wave_offset", source)
+                    continue
                 self.assertIn("wave_samples", source)
                 self.assertIn("wave_time", source)
                 self.assertIn("active.wave_offset", source)
@@ -368,7 +386,7 @@ class ParticleContractTests(unittest.TestCase):
         self.assertIn('"wave + grid rotation"', adapter)
 
     def test_console_demos_rotate_wave_geometry_about_the_moving_actor(self) -> None:
-        demos = ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua")
+        demos = ("picotron/main.lua", "tic80/demo.lua")
         for demo in demos:
             with self.subTest(demo=demo):
                 source = (ROOT / "examples" / demo).read_text(encoding="utf-8")
@@ -377,6 +395,11 @@ class ParticleContractTests(unittest.TestCase):
                 self.assertIn("active.rotate_point", source)
                 self.assertIn("active.wave_offset", source)
                 self.assertGreaterEqual(source.count("if rotating then"), 2)
+        pico = (ROOT / "examples" / "pico8" / "demo.p8").read_text(encoding="utf-8")
+        self.assertIn("system:set_rotation(actor_x", pico)
+        self.assertIn("system:rotate_point", pico)
+        self.assertIn("system:wave_offset", pico)
+        self.assertIn("rotate_grid=not rotate_grid", pico)
         for engine in ("pico8", "picotron", "tic80"):
             adapter = (ROOT / "examples" / engine / "demo_extension.lua").read_text(encoding="utf-8")
             with self.subTest(adapter=engine):

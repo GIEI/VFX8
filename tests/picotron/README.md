@@ -1,22 +1,11 @@
 # Picotron Runtime Smoke Test
 
-`runtime_smoke.lua` loads all seven Picotron modules, exercises their public update and rendering paths, and writes a pass marker into the isolated Picotron home. It does not modify the user's default Picotron drive.
+`runtime_smoke.lua` loads all seven Picotron modules at `low`, `medium`, and `high`. It exercises every particle preset and emission shape, palette filters and maps, shake directions, flame and lightning variants, pixel deformation helpers, invalid preset/filter/texture/vector inputs, and textured/fallback pseudo-3D drawing. It writes a pass marker into an isolated Picotron home and does not modify the user's default Picotron drive.
 
-Run it from the repository root in PowerShell:
+Run the wrapper from the repository root in PowerShell, providing the installed executable. The complete regression runner discovers this runtime automatically; see [`../README.md`](../README.md).
 
 ```powershell
-$picotron = "<path-to-picotron.exe>"
-$testHome = Join-Path $env:TEMP "vfx8-picotron-runtime-test\home"
-$moduleDir = Join-Path $testHome "drive\desktop\vfx8-picotron-runtime\vfx8"
-New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
-Copy-Item "src\picotron\*.lua" $moduleDir -Force
-$startedAt = Get-Date
-& $picotron -home $testHome -x (Resolve-Path "tests\picotron\runtime_smoke.lua")
-if ($LASTEXITCODE -ne 0) { throw "Picotron runtime smoke failed with exit code $LASTEXITCODE" }
-$marker = Join-Path $testHome "drive\appdata\vfx8_picotron_runtime_smoke.pod"
-if (-not (Test-Path $marker) -or (Get-Item $marker).LastWriteTime -lt $startedAt) {
-  throw "Picotron did not write a fresh smoke-test pass marker"
-}
+./tests/picotron/run-smoke.ps1 -PicotronExe "K:\Games\picotron\picotron.exe"
 ```
 
-The final command must return `True`. The smoke test uses Picotron's headless mode, so it verifies runtime/API compatibility and drawing calls without assessing the interactive showcase's visual composition or measuring performance.
+The wrapper checks the native runtime's pass messages for every profile and removes its temporary home after success. It preserves the home and log when a check fails. Headless drawing-call coverage does not replace reviewing the interactive demo's visual composition or measuring performance.

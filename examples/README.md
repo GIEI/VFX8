@@ -1,12 +1,12 @@
 # Demo environment
 
-Four reference scenes, one per engine, let you try VFX8 modules against a shared control surface. The first four slots use the reference grid scene; pseudo-3D replaces it with perspective bands, a starfield, and depth-projected objects.
+Four engine demo environments let you try VFX8 modules with `low`, `medium`, and `high` quality profiles. PICO-8 uses separate focused carts for core effects, pseudo-3D, and flames/electricity to fit its code token budget.
 
 ## Startup
 
 | Engine | Files | How to run |
 | --- | --- | --- |
-| PICO-8 | [`pico8/electricity_demo.p8`](pico8/electricity_demo.p8) or [`pico8/demo.p8`](pico8/demo.p8) + [`demo_extension.lua`](pico8/demo_extension.lua) | Load the standalone electric arc cart to test lightning. The all-effects showcase currently exceeds PICO-8's token limit. |
+| PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), and [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, or flames and electricity. Each includes only the modules it uses. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
 | Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/*.lua` | Put the files in the cartridge root and copy the implemented modules from `src/picotron/` to `vfx8/`; run with Ctrl+R. |
 | LÖVE | [`love2d/stage_demo.py`](love2d/stage_demo.py) | Run `python examples/love2d/stage_demo.py` from the repository root; the script stages the source module and launches LÖVE. |
 | TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file first, import it into a Lua cartridge, then use `run`. |
@@ -25,18 +25,18 @@ python tools/tic80_include.py examples/tic80/demo.lua -o examples/tic80/build/de
 
 The path passed to `import code` must be visible from the TIC-80 console's working directory. Use `folder` in TIC-80 to open that directory, copy `examples/tic80/build/demo.lua` there, then run `import code demo.lua` and `run`. For Picotron, put both files at the cartridge root because `main.lua` is the entry point.
 
-The demos use `#include`, `include()`, `require()`, and `--#include` respectively to load their adapter and effect modules. PICO-8 includes seven modules in one showcase cart; include only the module needed by a production game to preserve source and token budget. The same mechanisms for adding effects to an **existing game** are described in [`docs/integration.md`](../docs/integration.md).
+PICO-8 uses `#include` to load the modules required by each focused cart. Picotron, LÖVE, and TIC-80 use `include()`, `require()`, and `--#include` with their demo adapters. For a production game, include only the modules needed to preserve code space. The same mechanisms for adding effects to an **existing game** are described in [`docs/integration.md`](../docs/integration.md).
 
 ## Controls
 
 | Action | PICO-8 | Picotron | TIC-80 | LÖVE |
 | --- | --- | --- | --- |
-| Previous/next module | Left / right | Left / right | Left / right | Left / right arrow |
+| Previous/next module | Left / right (core cart) | Left / right | Left / right | Left / right arrow |
 | Previous/next profile | Up / down | Up / down | Up / down | Up / down arrow |
 | Trigger at crosshair | O | O | A | Space or Z |
 | Compare effects on/off | — | X | B | X |
 | Variant / next particle preset | X | Z | X | P |
-| Next emission shape | — | C | Y | M |
+| Next emission shape | Cycled with particle preset using X | C | Y | M |
 
 The starting profile is `low`. Changing module or profile reinitializes the active slot; turning effects off calls `on_exit`, displays `FX DISABLED`, and leaves the scene unprocessed. With the particle module selected, trigger emits the selected preset using the selected shape. Shapes are point, horizontal line, and rectangular area. In `pixel_deform`, the variant button rotates the grid around the moving square while the square and rest of the scene stay fixed. In `palette_fx`, it cycles color cycling, night, sepia, monochrome, glow, custom dusk mapping, and negative flash; trigger flashes mapped scene colors or applies the selected negative. In `pseudo3d`, the scene displays a textured Mode 7 ground plane and parallax starfield; trigger adds an object aligned to the road. In `flames`, the campfire emits continuously and trigger adds a burst; cycle the variant to switch to a directional flamethrower jet. In `electricity`, trigger creates a brief jagged bolt between the crosshair and the far side of the scene; cycle the variant for an unbranched arc. PICO-8 has only two action buttons: `O` triggers the active effect and `X` cycles the active variant or particle preset.
 

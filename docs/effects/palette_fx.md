@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | PICO-8 | `src/pico8/palette_fx.lua` | `#include` | Native palette contract and profile carts pass; temporal cycle and pulse phases are cached during update |
 | Picotron | `src/picotron/palette_fx.lua` | `include()` | Headless runtime smoke covers cycle/filter/flash mapping; interactive palette review pending |
-| LÖVE | `src/love2d/palette_fx.lua` | `require()` | Automated runtime contract passes on LÖVE 11.5; temporal cycle and pulse phases are cached during update |
+| LÖVE | `src/love2d/palette_fx.lua` | `require()` | Portable contract passes; native startup is currently blocked by filesystem initialization in this environment. Temporal cycle and pulse phases are cached during update |
 | TIC-80 | `src/tic80/palette_fx.lua` | build-time include | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
 
 The built-in filters are 16-entry index maps designed for a PICO-8-style palette. Picotron accepts up to 64 colors, but its built-in filters affect only indices 0 through 15. Use `set_filter_map()` for a custom palette layout or to map all 64 Picotron indices.
