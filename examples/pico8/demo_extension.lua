@@ -105,7 +105,7 @@ local function prepare_pseudo_texture()
 end
 local pseudo_colors={sky=1,ground=3,road_a=1,road_b=13,edge=11,stars={7,6,5}}
 fx[5]={
- on_enter=function(q) prepare_pseudo_texture(); pseudo=vfx8_pseudo3d.new({quality=q,width=128,height=96,horizon=34,lane_count=3}); pseudo:set_mode7({width_tiles=16,height_tiles=16,scale=0.55}); pseudo_time=0; pseudo_curve=true end,
+ on_enter=function(q) prepare_pseudo_texture(); pseudo=vfx8_pseudo3d.new({quality=q,width=128,height=96,horizon=34,lane_count=3}); if pseudo.set_mode7 then pseudo:set_mode7({width_tiles=16,height_tiles=16,scale=0.55}) end; pseudo_time=0; pseudo_curve=true end,
  on_exit=function() if pseudo then pseudo:clear() end end,
  trigger=function() if pseudo then pseudo:add_object(((pseudo.object_count%3)-1)*0.48,100,11,4) end end,
  update=function(dt) if pseudo then pseudo:update(dt); pseudo_time=pseudo_time+dt; pseudo:set_road(nil,nil,pseudo_curve and sin(pseudo_time*0.25)*0.55 or 0) end end,

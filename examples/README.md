@@ -2,11 +2,13 @@
 
 Four engine demo environments let you try VFX8 modules with `low`, `medium`, and `high` quality profiles. PICO-8 uses separate focused carts for core effects, pseudo-3D, and flames/electricity to fit its code token budget.
 
+For a callback and input integration check, see the [minimal integration game](integration_game/README.md). It is provided as a self-contained project for each engine and advances through the seven effects with one button.
+
 ## Startup
 
 | Engine | Files | How to run |
 | --- | --- | --- |
-| PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), and [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, or flames and electricity. Each includes only the modules it uses. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
+| PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), and [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, or flames and electricity. Each includes only the modules it uses. The [`pseudo3d_demo_standalone.p8`](pico8/pseudo3d_demo_standalone.p8) copy has its module embedded for setups where the relative `#include` path is not resolved. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
 | Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/*.lua` | Put the files in the cartridge root and copy the implemented modules from `src/picotron/` to `vfx8/`; run with Ctrl+R. |
 | LÖVE | [`love2d/stage_demo.py`](love2d/stage_demo.py) | Run `python examples/love2d/stage_demo.py` from the repository root; the script stages the source module and launches LÖVE. |
 | TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file, import the generated source into a Lua cartridge, then use `run`. The user-confirmed native test used this compiled showcase and all seven effects worked. |

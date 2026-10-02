@@ -109,7 +109,7 @@ Technical choices will be checked against official documentation: [PICO-8](https
 
 | Engine | Source/API review | Demo build | Native runtime | Measured profiles |
 | --- | --- | --- | --- | --- |
-| PICO-8 | Source and API contract checks pass | Three focused showcase carts fit the token limit | Core, pseudo-3D, flames/electricity, and standalone electric carts boot cleanly | Showcase code tokens measured; see [token report](benchmarks/results/pico8-showcase-token-budget.md) |
+| PICO-8 | Source and API contract checks pass | Three focused showcase carts fit the token limit | User confirms the self-contained pseudo-3D demo works; all three showcase carts and standalone electricity cart also pass clean boot checks | Showcase code tokens measured; see [token report](benchmarks/results/pico8-showcase-token-budget.md) |
 | Picotron | Portable source/API contracts pass | Include layout prepared | User confirms all seven effects work in the native demo; headless smoke also covers variants and all profiles | Performance measurements are in the [Picotron report](benchmarks/results/picotron-effects.md) |
 | LÖVE | Portable source/API contracts pass | Staging script passes | LÖVE 11.5 is installed; native launch fails during filesystem initialization and the local MCP endpoint is offline | Not measured |
 | TIC-80 | Portable source/API contracts pass | Include expansion tests pass | User-confirmed native test: all seven effects work on TIC-80 1.2.0; per-profile measurements pending | Not measured |

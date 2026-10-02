@@ -6,7 +6,7 @@ This checklist covers interactive appearance, controls, draw order, and state re
 
 | Engine | Runtime observed | Automated coverage | Visual review |
 | --- | --- | --- | --- |
-| PICO-8 | Version unavailable from the runtime bridge | Core and advanced profile contracts pass at low, medium, and high. The three showcase carts and standalone electricity cart pass clean boot checks. | Pending. Interactive lockstep startup timed out; screenshots and control navigation were unavailable. |
+| PICO-8 | Version unavailable from the runtime bridge | Core and advanced profile contracts pass at low, medium, and high. The three showcase carts and standalone electricity cart pass clean boot checks. The user confirms the self-contained pseudo-3D cart works. | Pseudo-3D standalone cart functionally verified by the user. Remaining showcase visuals, controls, and profile checks are pending. |
 | Picotron | 0.3.0d, build 260527-061316; user-tested native demo | User confirms all seven effects work in the native demo. Automated smoke also covers update/draw variants at low/medium/high and both pseudo-3D texture and fallback paths. | Functional check complete. No native screenshot or separate visual profile record is stored. |
 | LÖVE | 11.5.0 | Portable source contracts pass. Direct runtime startup fails while initializing the user filesystem; the local `love2d-mcp` endpoint is not running. | Pending. |
 | TIC-80 | 1.2.0, user-confirmed | Portable source and include-build checks pass. The user imported and ran the self-contained compiled showcase and confirmed that all seven effects work. | Functional visual check complete for the showcase. No native capture or separate profile-by-profile record is stored. |
@@ -16,7 +16,7 @@ This checklist covers interactive appearance, controls, draw order, and state re
 ### PICO-8
 
 - [ ] Open `examples/pico8/demo.p8`. At each quality (`low`, `medium`, `high`), cycle particles, screen effects, pixel warp, and palette effects. Trigger each effect and try its available variants. For particles, cycle the preset and emission-shape combinations.
-- [ ] Open `examples/pico8/pseudo3d_demo.p8`. At each quality, inspect the road texture, starfield, perspective coverage, projected objects, and camera/road variation.
+- [x] Open `examples/pico8/pseudo3d_demo_standalone.p8`. The user confirms the self-contained cart works. Separate visual review of every profile and variant remains unrecorded.
 - [ ] Open `examples/pico8/flames_electricity_demo.p8`. At each quality, inspect campfire and flamethrower variants, then branched and clean lightning. Confirm repeated triggers do not leave stale pixels or stop updates.
 - [ ] Open `examples/pico8/electricity_demo.p8` and check the standalone branched/clean bolt toggle and repeated strikes.
 - [ ] Confirm arrow and O/X controls do not behave as if held continuously, the active scene field stays filled, and the game returns to a stable frame after each effect.

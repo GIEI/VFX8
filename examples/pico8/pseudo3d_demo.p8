@@ -23,7 +23,7 @@ local function reset_road()
  if road then road:clear() end
  prepare_texture()
  road=vfx8_pseudo3d.new({quality=quality_names[quality],width=128,height=96,horizon=34,lane_count=3})
- road:set_mode7({width_tiles=16,height_tiles=16,scale=0.55})
+ if road.set_mode7 then road:set_mode7({width_tiles=16,height_tiles=16,scale=0.55}) end
 end
 function _init() reset_road() end
 function _update60()
