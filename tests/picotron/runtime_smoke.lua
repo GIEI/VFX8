@@ -55,6 +55,11 @@ for quality in all(qualities) do
 
   local screen_fx = vfx8_screen_fx.new({width = 240, height = 136, seed = 9})
   screen_fx:add_trauma(0.8)
+  local trauma_only = vfx8_screen_fx.new({width = 240, height = 136, seed = 9})
+  trauma_only:add_trauma(0.8)
+  trauma_only:update(dt)
+  local trauma_x, trauma_y = trauma_only:get_shake_offset()
+  assert(trauma_x ~= 0 or trauma_y ~= 0, "add_trauma must start a visible shake envelope")
   screen_fx:impulse(5, 2, 0.2)
   screen_fx:flash(0.08, 7)
   assert(screen_fx:shockwave(120, 68, 3, 12, 0.35))

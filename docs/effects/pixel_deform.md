@@ -7,9 +7,9 @@
 | Engine | Module | Integration | Runtime status |
 | --- | --- | --- | --- |
 | PICO-8 | `src/pico8/pixel_deform.lua` | `#include` | Native profile cart records helper-only typical-load samples at low, medium, and high; it does not rasterize transformed game sprites |
-| Picotron | `src/picotron/pixel_deform.lua` | `include()` | Headless runtime smoke covers wave, rotation, squash, and scale helpers; interactive visual review pending |
-| LÖVE | `src/love2d/pixel_deform.lua` | `require()` | Wave and grid-rotation demo smoke-tested live on LÖVE 11.5; benchmarks not collected |
-| TIC-80 | `src/tic80/pixel_deform.lua` | build-time include | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
+| Picotron | `src/picotron/pixel_deform.lua` | `include()` | User confirms visual checks are complete; headless runtime smoke and five-run helper-workload benchmark cover all profiles. See the [Picotron report](../../benchmarks/results/picotron-effects.md) |
+| LÖVE | `src/love2d/pixel_deform.lua` | `require()` | Wave/grid-rotation demo and five-run helper-workload benchmark verified on LÖVE 11.5; see the [LÖVE report](../../benchmarks/results/love2d-effects-latest.md) |
+| TIC-80 | `src/tic80/pixel_deform.lua` | build-time include | User confirms visual checks and performance measurements are complete; detailed results are not yet recorded in the benchmark report |
 
 Wave output is deterministic and uses the engine's sine implementation. Squash/stretch changes scale over one trigger duration and returns smoothly to `(1, 1)`. Dissolve uses a fixed 4×4 threshold matrix, with ordered, checker, and spiral variants. The demo caches one offset per four-pixel column and reuses it across grid rows to limit sine calls. It applies these helpers to a small sample object and grid; it does not establish a universal sprite drawing API.
 
@@ -70,6 +70,6 @@ Call `set_rotation(cx, cy, angle)` once before drawing a frame. `rotation_bounds
 
 ## Quality, cost, and limits
 
-The object stores a phase and squash timer/scales. Wave and dissolve calls have constant work and no allocation. Dissolve is intended to be evaluated only for pixels actually drawn. Quality does not alter the helper calculations. The module does not change palette, clipping, camera, or shared graphics state. Performance has not yet been measured on the target engines.
+The object stores a phase and squash timer/scales. Wave and dissolve calls have constant work and no allocation. Dissolve is intended to be evaluated only for pixels actually drawn. Quality does not alter the helper calculations. The module does not change palette, clipping, camera, or shared graphics state. The [Picotron](../../benchmarks/results/picotron-effects.md) and [LÖVE](../../benchmarks/results/love2d-effects-latest.md) reports include synthetic helper-call workloads; they measure coordinate/mask helper cost, not end-to-end sprite rasterization. The user confirms PICO-8 and TIC-80 visual/performance checks are complete; their detailed values are not yet recorded in these reports.
 
 The wave helper supplies coordinates but does not split a sprite into rows. The squash helper supplies scales but cannot resize native sprites on all fantasy consoles. The dissolve helper supplies a visibility mask; drawing a large object pixel-by-pixel can be expensive, so use it on small sprites or a coarse sample grid on constrained targets.

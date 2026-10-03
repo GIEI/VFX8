@@ -43,10 +43,10 @@ local function configure_entry()
   effect=create_effect(entry[1]); selected_group=entry[1]
  elseif effect and effect.clear then effect:clear() end
  if entry[1]==4 then
-  if entry[2]=="cycle" then effect:set_cycle(8,11,2)
-  elseif entry[2]=="night" or entry[2]=="sepia" or entry[2]=="mono" then effect:set_filter(entry[2])
-  elseif entry[2]=="glow" then effect:set_pulse(8,10,4)
-  elseif entry[2]=="dusk" then effect:set_filter_map(dusk_map) end
+  if entry[3]=="cycle" then effect:set_cycle(8,11,2)
+  elseif entry[3]=="night" or entry[3]=="sepia" or entry[3]=="mono" then effect:set_filter(entry[3])
+  elseif entry[3]=="glow" then effect:set_pulse(8,10,4)
+  elseif entry[3]=="dusk" then effect:set_filter_map(dusk_map) end
  end
  dissolve_time=nil
 end
@@ -54,7 +54,7 @@ local function handoff()
  load("advanced.p8","NEXT: PSEUDO-3D",tostr(player.x)..","..tostr(player.y))
 end
 local function trigger_effect()
- local mode=entry[2]
+ local mode=entry[3]
  if entry[1]==1 then
   local preset,shape=entry[3],entry[4]
   if shape=="line" then effect:emit_line(preset,max(8,player.x-18),player.y,min(w-8,player.x+18),player.y,{spread=2})
@@ -88,7 +88,7 @@ local function mapped_color(index)
  return index
 end
 local function draw_warp_grid()
- local rotating=entry[2]=="rotation"
+ local rotating=entry[3]=="rotation"
  local left,t,right,b=0,top,w-1,bottom
  if rotating then
   effect:set_rotation(player.x,player.y,clock*0.45)
@@ -118,19 +118,19 @@ local function draw_warp_grid()
 end
 local function draw_world()
  cls(mapped_color(1)); rectfill(0,top,w-1,bottom,mapped_color(2))
- if entry[1]==3 and (entry[2]=="wave" or entry[2]=="rotation") then draw_warp_grid()
+ if entry[1]==3 and (entry[3]=="wave" or entry[3]=="rotation") then draw_warp_grid()
  else
   for x=0,w,16 do line(x,top,x,bottom,mapped_color(13)) end
   for y=top,bottom,16 do line(0,y,w-1,y,mapped_color(13)) end
  end
- if entry[1]==3 and (entry[2]=="ordered" or entry[2]=="checker" or entry[2]=="spiral") and dissolve_time then
+ if entry[1]==3 and (entry[3]=="ordered" or entry[3]=="checker" or entry[3]=="spiral") and dissolve_time then
   local amount=min(1,dissolve_time/0.7)
   for y=0,7 do for x=0,7 do
-   if effect:visible(player.x-4+x,player.y-4+y,amount,entry[2]) then pset(player.x-4+x,player.y-4+y,mapped_color(8)) end
+   if effect:visible(player.x-4+x,player.y-4+y,amount,entry[3]) then pset(player.x-4+x,player.y-4+y,mapped_color(8)) end
   end end
  else
   local sx,sy=1,1
-  if entry[1]==3 and entry[2]=="squash" then sx,sy=effect:scale() end
+  if entry[1]==3 and entry[3]=="squash" then sx,sy=effect:scale() end
   local pw,ph=max(2,flr(8*sx)),max(2,flr(8*sy))
   rectfill(flr(player.x-pw/2),flr(player.y-ph/2),flr(player.x-pw/2)+pw-1,flr(player.y-ph/2)+ph-1,mapped_color(8))
  end

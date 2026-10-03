@@ -6,10 +6,10 @@
 
 | Engine | Source | Include method | Verification |
 | --- | --- | --- | --- |
-| PICO-8 | `src/pico8/flames.lua` | `#include` | Cartridge smoke and token checks pending |
-| Picotron | `src/picotron/flames.lua` | `include()` | Headless runtime smoke covers campfire emission, update, and drawing; interactive visual review pending |
-| LÖVE | `src/love2d/flames.lua` | `require()` | Runtime contract available; native visual verification pending |
-| TIC-80 | `src/tic80/flames.lua` | Build-time include expansion | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
+| PICO-8 | `src/pico8/flames.lua` | `#include` | User confirms visual checks and performance measurements are complete; standalone module token count remains open |
+| Picotron | `src/picotron/flames.lua` | `include()` | User confirms visual checks are complete; headless runtime smoke and five-run benchmark cover all profiles. See the [Picotron report](../../benchmarks/results/picotron-effects.md) |
+| LÖVE | `src/love2d/flames.lua` | `require()` | User confirms visual checks are complete; native API tests and five-run benchmark cover all profiles. See the [LÖVE report](../../benchmarks/results/love2d-effects-latest.md) |
+| TIC-80 | `src/tic80/flames.lua` | Build-time include expansion | User confirms visual checks and performance measurements are complete; detailed results are not yet recorded in the benchmark report |
 
 ## Integration
 
@@ -80,3 +80,5 @@ flames:emit_campfire(fire.x, fire.y, {radius = 6, count = 3})
 The first value is the default active pool and the second is the maximum number accepted in one `update()` interval. Higher profiles increase visible density while respecting each engine's ceiling. If a pool or update budget is full, new particles are dropped; existing particles are never evicted. For a campfire, call `emit_campfire` each update and let the pool budget naturally cap the sustained plume.
 
 PICO-8, Picotron, and TIC-80 draw palette-index pixels with engine primitives. LÖVE draws the same style with filled rectangles and restores the caller's color after drawing. Call `draw()` after the world and before UI that should appear above the fire.
+
+Picotron and LÖVE have repeatable all-profile typical and saturated measurements in the [Picotron](../../benchmarks/results/picotron-effects.md) and [LÖVE](../../benchmarks/results/love2d-effects-latest.md) reports. The user confirms PICO-8 and TIC-80 visual/performance checks are complete; their detailed values are not yet recorded. Standalone PICO-8 module token cost remains open.

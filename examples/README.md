@@ -73,7 +73,7 @@ fx[1] = {
 
 `render_scene` must call `draw_scene()` **once**. Effects that change the camera, buffer, or palette can set the state before that call and restore it immediately afterward. Use `draw` for overlays such as particles. If a method is missing, the demo uses its default behavior. On fantasy consoles, the demo passes `dt = 1/60`; LÖVE uses the real `love.update` callback time.
 
-On PICO-8 and TIC-80, connect one module at a time: including all seven in one test cartridge would skew measurements and use code space unnecessarily. The demos do not yet contain automatic measurements; final benchmarks will be added with each module.
+On PICO-8 and TIC-80, connect one module at a time: including all seven in one test cartridge would skew measurements and use code space unnecessarily. Performance harnesses and recorded measurements are maintained under `benchmarks/`; the interactive demos are for visual and input checks, not automatic benchmarking.
 
 ## Quick demo check
 

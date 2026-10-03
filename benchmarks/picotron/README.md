@@ -3,10 +3,10 @@
 Run from the repository root on a machine with Picotron installed:
 
 ```powershell
-./benchmarks/picotron/run.ps1 -PicotronExe "K:\Games\picotron\picotron.exe"
+./benchmarks/picotron/run.ps1 -PicotronExe "K:\Games\picotron\picotron.exe" -RuntimeVersion "0.3.0d"
 ```
 
-The runner creates a disposable Picotron home, stages the current engine modules, runs every scenario, validates the expected records, writes a raw CSV and a Markdown summary under `benchmarks/results/`, then removes the temporary home. On failure it preserves the home and runtime logs for diagnosis.
+The runner creates a disposable Picotron home, stages the current engine modules, runs every scenario, validates the expected records, writes a raw CSV and a Markdown summary under `benchmarks/results/`, then removes the temporary home. On failure it preserves the home and runtime logs for diagnosis. `-RuntimeVersion` is optional and supplies a known version label when the runtime's isolated home does not create a version log; the report keeps the raw `stat(5)` value alongside it.
 
 The default run records 225 rows: seven effects plus a baseline, typical and saturated work at `low`, `medium`, and `high`, repeated five times. Each repetition warms up for 30 frames and samples 120 frames. Shorter settings can be used to validate the runner; they are not release measurements:
 

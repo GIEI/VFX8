@@ -7,9 +7,9 @@
 | Engine | Module | Integration | Status |
 | --- | --- | --- | --- |
 | PICO-8 | `src/pico8/palette_fx.lua` | `#include` | Native palette contract and profile carts pass; temporal cycle and pulse phases are cached during update |
-| Picotron | `src/picotron/palette_fx.lua` | `include()` | Headless runtime smoke covers cycle/filter/flash mapping; interactive palette review pending |
-| LÖVE | `src/love2d/palette_fx.lua` | `require()` | Portable contract passes; native startup is currently blocked by filesystem initialization in this environment. Temporal cycle and pulse phases are cached during update |
-| TIC-80 | `src/tic80/palette_fx.lua` | build-time include | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
+| Picotron | `src/picotron/palette_fx.lua` | `include()` | User confirms visual checks are complete; headless runtime smoke and five-run helper-workload benchmark cover all profiles. See the [Picotron report](../../benchmarks/results/picotron-effects.md) |
+| LÖVE | `src/love2d/palette_fx.lua` | `require()` | Native API tests and five-run helper-workload benchmark pass on LÖVE 11.5; see the [LÖVE report](../../benchmarks/results/love2d-effects-latest.md). Temporal cycle and pulse phases are cached during update |
+| TIC-80 | `src/tic80/palette_fx.lua` | build-time include | User confirms visual checks and performance measurements are complete; detailed results are not yet recorded in the benchmark report |
 
 The built-in filters are 16-entry index maps designed for a PICO-8-style palette. Picotron accepts up to 64 colors, but its built-in filters affect only indices 0 through 15. Use `set_filter_map()` for a custom palette layout or to map all 64 Picotron indices.
 
@@ -135,7 +135,7 @@ Select `palette_fx` with the module controls. Trigger flashes the actor's mapped
 
 ## Quality, cost, and limits
 
-Mapping uses constant-time arithmetic and at most two table lookups per draw color. Cycle shifts and pulse phases are calculated in `update()` and reused by each mapping call. One PICO-8 stress-cart run with 128 mappings per frame recorded an average CPU fraction of `0.1076` before and `0.1056` after caching over 600 frames. This is a small whole-workload improvement, not a universal speedup guarantee; repeated timer and phase calculations have been removed from the per-color path. The module does not scan pixels, copy a framebuffer, or allocate memory while updating or mapping colors. Negative-map construction compares each configured RGB pair once (at most 64×64 comparisons on Picotron), not per frame. `color_count` is clamped to 16 on PICO-8, TIC-80, and LÖVE; Picotron supports 1..64 indices. Quality profiles do not change the fixed per-call cost.
+Mapping uses constant-time arithmetic and at most two table lookups per draw color. Cycle shifts and pulse phases are calculated in `update()` and reused by each mapping call. One PICO-8 stress-cart run with 128 mappings per frame recorded an average CPU fraction of `0.1076` before and `0.1056` after caching over 600 frames. This is a small whole-workload improvement, not a universal speedup guarantee; repeated timer and phase calculations have been removed from the per-color path. The module does not scan pixels, copy a framebuffer, or allocate memory while updating or mapping colors. Negative-map construction compares each configured RGB pair once (at most 64×64 comparisons on Picotron), not per frame. `color_count` is clamped to 16 on PICO-8, TIC-80, and LÖVE; Picotron supports 1..64 indices. Quality profiles do not change the fixed per-call cost. The Picotron and LÖVE reports measure repeatable helper-call workloads at all profiles: [Picotron](../../benchmarks/results/picotron-effects.md), [LÖVE](../../benchmarks/results/love2d-effects-latest.md). The user confirms PICO-8 and TIC-80 visual/performance checks are complete; their detailed values are not yet recorded.
 
 Filters are direct index substitutions, not RGB color grading, so their output depends on the palette's index ordering. Built-in filters cover the first 16 indices; a custom map covers every configured index. Since this module avoids global palette changes, native sprite and tilemap calls that draw many indexed pixels are not intercepted; map their colors in the game renderer or draw path where feasible.
 

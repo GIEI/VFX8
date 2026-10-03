@@ -60,12 +60,12 @@ local function configure_entry()
   effect=create_effect(entry[1]); selected_group=entry[1]
  elseif effect and effect.clear then effect:clear() end
  if entry[1]==4 then
-  if entry[2]=="cycle" then effect:set_cycle(8,11,2)
-  elseif entry[2]=="night" or entry[2]=="sepia" or entry[2]=="mono" then effect:set_filter(entry[2])
-  elseif entry[2]=="glow" then effect:set_pulse(8,10,4)
-  elseif entry[2]=="dusk" then effect:set_filter_map(dusk_map) end
+  if entry[3]=="cycle" then effect:set_cycle(8,11,2)
+  elseif entry[3]=="night" or entry[3]=="sepia" or entry[3]=="mono" then effect:set_filter(entry[3])
+  elseif entry[3]=="glow" then effect:set_pulse(8,10,4)
+  elseif entry[3]=="dusk" then effect:set_filter_map(dusk_map) end
  elseif entry[1]==5 then
-  if entry[2]=="mode7" then prepare_texture(); effect:set_mode7({source=pseudo_texture,width=64,height=64,scale=0.6})
+  if entry[3]=="mode7" then prepare_texture(); effect:set_mode7({source=pseudo_texture,width=64,height=64,scale=0.6})
   else effect:set_mode7(false) end
  end
  dissolve_time=nil
@@ -75,7 +75,7 @@ local function next_entry()
  configure_entry()
 end
 local function trigger_effect()
- local mode=entry[2]
+ local mode=entry[3]
  if entry[1]==1 then
   local preset,shape=entry[3],entry[4]
   if shape=="line" then effect:emit_line(preset,max(8,player.x-24),player.y,min(width-8,player.x+24),player.y,{spread=2})
@@ -107,7 +107,7 @@ local function update_game(dt)
  player.x=max(4,min(width-4,player.x+dx*player.speed*dt))
  player.y=max(play_top+4,min(play_bottom-8,player.y+dy*player.speed*dt))
  clock=clock+dt
- if entry[1]==6 and entry[2]=="campfire" then effect:emit_campfire(player.x,player.y+8,{count=2,radius=3}) end
+ if entry[1]==6 and entry[3]=="campfire" then effect:emit_campfire(player.x,player.y+8,{count=2,radius=3}) end
  effect:update(dt)
  if dissolve_time then dissolve_time=dissolve_time+dt; if dissolve_time>=0.7 then dissolve_time=nil end end
  if entry[1]==5 then effect:set_road(nil,nil,math.sin(clock*0.25)*0.35) end
@@ -117,7 +117,7 @@ local function mapped_color(index)
  return index
 end
 local function draw_warp_grid()
- local rotating=entry[2]=="rotation"
+ local rotating=entry[3]=="rotation"
  local left,top,right,bottom=0,play_top,width-1,play_bottom
  if rotating then
   effect:set_rotation(player.x,player.y,clock*0.45)
@@ -149,20 +149,20 @@ local function draw_world()
  if entry[1]==5 then effect:draw(colors)
  else
   cls(mapped_color(1)); rectfill(0,play_top,width-1,play_bottom,mapped_color(2))
-  if entry[1]==3 and (entry[2]=="wave" or entry[2]=="rotation") then draw_warp_grid()
+  if entry[1]==3 and (entry[3]=="wave" or entry[3]=="rotation") then draw_warp_grid()
   else
    for x=0,width,16 do line(x,play_top,x,play_bottom,mapped_color(13)) end
    for y=play_top,play_bottom,16 do line(0,y,width-1,y,mapped_color(13)) end
   end
  end
- if entry[1]==3 and (entry[2]=="ordered" or entry[2]=="checker" or entry[2]=="spiral") and dissolve_time then
+ if entry[1]==3 and (entry[3]=="ordered" or entry[3]=="checker" or entry[3]=="spiral") and dissolve_time then
   local amount=min(1,dissolve_time/0.7)
   for y=0,7 do for x=0,7 do
-   if effect:visible(player.x-4+x,player.y-4+y,amount,entry[2]) then pset(player.x-4+x,player.y-4+y,mapped_color(8)) end
+   if effect:visible(player.x-4+x,player.y-4+y,amount,entry[3]) then pset(player.x-4+x,player.y-4+y,mapped_color(8)) end
   end end
  else
   local sx,sy=1,1
-  if entry[1]==3 and entry[2]=="squash" then sx,sy=effect:scale() end
+  if entry[1]==3 and entry[3]=="squash" then sx,sy=effect:scale() end
   local pw,ph=max(4,flr(8*sx)),max(4,flr(8*sy))
   rectfill(flr(player.x-pw/2),flr(player.y-ph/2),flr(player.x-pw/2)+pw-1,flr(player.y-ph/2)+ph-1,mapped_color(8))
  end

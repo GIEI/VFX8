@@ -358,6 +358,15 @@ class ParticleContractTests(unittest.TestCase):
         self.assertIn("poke(0x3ffa, screen_y)", module)
         self.assertIn("local ok, err = pcall(draw_scene)", module)
 
+    def test_screen_trauma_starts_a_visible_shake_envelope_on_every_engine(self) -> None:
+        for engine in ("pico8", "picotron", "tic80", "love2d"):
+            module = (ROOT / "src" / engine / "screen_fx.lua").read_text(encoding="utf-8")
+            with self.subTest(engine=engine):
+                max_expression = "math.max" if engine in ("tic80", "love2d") else "max"
+                self.assertIn(f"self.shake_duration = {max_expression}(self.shake_duration, 0.35)", module)
+                self.assertRegex(module, r"self\.shake_time\s*=\s*(?:math\.)?max\(self\.shake_time, self\.shake_duration\)")
+                self.assertRegex(module, r"nx\s*\*\s*8")
+
     def test_pixel_deformation_demos_cache_wave_samples(self) -> None:
         demos = ("pico8/demo.p8", "picotron/main.lua", "tic80/demo.lua", "love2d/main.lua")
         for demo in demos:

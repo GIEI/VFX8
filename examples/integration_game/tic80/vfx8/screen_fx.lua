@@ -18,7 +18,11 @@ function vfx8_screen_fx.new(options)
     render = methods.render, clear = methods.clear
   }
 end
-function methods.add_trauma(self, amount) self.trauma = math.min(1, self.trauma + math.max(0, amount or 0)) end
+function methods.add_trauma(self, amount)
+  self.trauma = math.min(1, self.trauma + math.max(0, amount or 0))
+  self.shake_duration = math.max(self.shake_duration, 0.35)
+  self.shake_time = math.max(self.shake_time, self.shake_duration)
+end
 function methods.impulse(self, x, y, duration)
   self.shake_x, self.shake_y = x or 0, y or 0
   self.trauma = math.max(self.trauma, 1)
@@ -49,7 +53,7 @@ function methods.update(self, dt)
   local ny = self.seed / 251 - 0.5
   local trauma = self.trauma * self.trauma
   local decay = self.shake_duration > 0 and self.shake_time / self.shake_duration or 0
-  self.offset_x, self.offset_y = (self.shake_x + nx * 2) * trauma * decay, (self.shake_y + ny * 2) * trauma * decay
+  self.offset_x, self.offset_y = (self.shake_x + nx * 8) * trauma * decay, (self.shake_y + ny * 8) * trauma * decay
   local i = 1
   while i <= self.wave_count do
     local wave = self.waves[i]

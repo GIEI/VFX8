@@ -2,7 +2,7 @@
 
 A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goal is to make effects easy to integrate into games, with predictable costs on fantasy consoles and richer quality options where resources allow.
 
-> **Status:** all seven effect modules are implemented for all four engines. Selected native checks pass; full-matrix verification and measured benchmark coverage remain open.
+> **Status:** all seven effect modules are implemented for all four engines. The user confirms visual checks are complete on all four engines and performance measurements are complete on PICO-8 and TIC-80. Detailed PICO-8/TIC-80 measurement values and remaining platform-specific benchmark coverage are tracked in the release checklist.
 
 **License:** MIT. See [LICENSE](LICENSE).
 
@@ -99,7 +99,7 @@ The distinction between a **screen flash** (`screen_fx`) and an **object flash**
 
 ## Documentation for each effect
 
-Each module has its own page in `docs/effects/`, with sections for integration, parameters, quality profiles, cost, and limitations. Native test results and measured costs will be recorded as engines become available.
+Each module has its own page in `docs/effects/`, with sections for integration, parameters, quality profiles, cost, and limitations. User-confirmed visual checks cover all four native engines. Measured costs and known evidence gaps are tracked in `benchmarks/` and the release checklist.
 
 ## Engine references
 
@@ -107,18 +107,20 @@ Technical choices will be checked against official documentation: [PICO-8](https
 
 ## Compatibility status
 
-| Engine | Source/API review | Demo build | Native runtime | Measured profiles |
-| --- | --- | --- | --- | --- |
-| PICO-8 | Source and API contract checks pass | Three focused showcase carts fit the token limit | User confirms the self-contained pseudo-3D demo works; all three showcase carts and standalone electricity cart also pass clean boot checks | Showcase code tokens measured; see [token report](benchmarks/results/pico8-showcase-token-budget.md) |
-| Picotron | Portable source/API contracts pass | Include layout prepared | User confirms all seven effects work in the native demo; headless smoke also covers variants and all profiles | Performance measurements are in the [Picotron report](benchmarks/results/picotron-effects.md) |
-| LÖVE | Portable source/API contracts pass | Staging script passes | LÖVE 11.5 is installed; native launch fails during filesystem initialization and the local MCP endpoint is offline | Not measured |
-| TIC-80 | Portable source/API contracts pass | Include expansion tests pass | User-confirmed native test: all seven effects work on TIC-80 1.2.0; per-profile measurements pending | Not measured |
+| Engine | Version verified | Source/API review | Demo build | Native runtime | Measured profiles |
+| --- | --- | --- | --- | --- | --- |
+| PICO-8 | Version not recorded | Source and API contract checks pass | Three focused showcase carts fit the token limit | User confirms the integration game and visual checks across effects/profiles | User confirms performance measurements complete; raw values not supplied. Showcase code tokens: [report](benchmarks/results/pico8-showcase-token-budget.md) |
+| Picotron | 0.3.0d | Portable source/API contracts pass | Include layout prepared | User confirms all seven effects, integration game, and visual checks work; headless smoke also covers variants and all profiles | Performance measurements are in the [Picotron report](benchmarks/results/picotron-effects.md) |
+| LÖVE | 11.5.0 | Portable source/API contracts pass | Staging script passes | User confirms integration game and visual checks work; native API harness passes. The local MCP endpoint is offline. | Five-run all-effects benchmark covers low/medium/high and baseline/typical/saturated workloads; see [results](benchmarks/results/love2d-effects-latest.md) |
+| TIC-80 | 1.2.0 | Portable source/API contracts pass | Include expansion tests pass | User confirms all seven effects and visual checks across profiles; integration game works | User confirms performance measurements complete; raw values not supplied |
 
-“Implemented” describes source and demo adapters; it does not imply that every runtime or performance gate has passed. See [benchmark status and procedure](benchmarks/README.md). Record engine versions and profile measurements as they become available.
+“Implemented” describes source and demo adapters; it does not imply that every release gate has passed. Visual checks are user-confirmed complete on all four engines. PICO-8 and TIC-80 performance measurements are also confirmed complete, while their detailed run records have not yet been added to this repository. See [benchmark status and procedure](benchmarks/README.md).
 
 See the [public release checklist](docs/release-checklist.md) for the remaining runtime, performance, packaging, and publication work.
 
 Run portable contracts and available native runtime checks with [`tests/run-regression.ps1`](tests/run-regression.ps1). See [`tests/README.md`](tests/README.md) for coverage, runtime requirements, and skip behavior. The portable regression path runs in GitHub Actions.
+
+Create a clean source archive with `python tools/package_release.py --version 0.1.0`. The packager includes source, docs, examples, tests, benchmark reports, and license files while omitting generated build folders, caches, and local runtime data. By default it writes to `.tmp/`.
 
 ## Contributing
 

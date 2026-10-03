@@ -7,9 +7,9 @@
 | Engine | Source | Include method | Status |
 | --- | --- | --- | --- |
 | PICO-8 | `src/pico8/electricity.lua` | `#include` | Standalone showcase and API contract carts boot; verify token and CPU cost in the host cartridge |
-| Picotron | `src/picotron/electricity.lua` | `include()` | Headless runtime smoke covers bolt generation, update, and drawing; performance profiles remain unmeasured |
-| LÖVE | `src/love2d/electricity.lua` | `require()` | Bounded line rendering; automated runtime contract included |
-| TIC-80 | `src/tic80/electricity.lua` | Build-time include expansion | User-confirmed working showcase on TIC-80 1.2.0; benchmark and automated native regression pending |
+| Picotron | `src/picotron/electricity.lua` | `include()` | Headless smoke and five-run benchmark cover all profiles; see the [Picotron report](../../benchmarks/results/picotron-effects.md) |
+| LÖVE | `src/love2d/electricity.lua` | `require()` | Bounded line rendering, native API tests, and five-run benchmark cover all profiles; see the [LÖVE report](../../benchmarks/results/love2d-effects-latest.md) |
+| TIC-80 | `src/tic80/electricity.lua` | Build-time include expansion | User confirms visual checks and performance measurements are complete; detailed results are not yet recorded in the benchmark report |
 
 ## Integration
 

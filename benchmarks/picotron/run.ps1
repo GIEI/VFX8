@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory = $true)]
   [string]$PicotronExe,
+  [string]$RuntimeVersion = "",
   [string]$Python = "python",
   [string]$Output = (Join-Path $PSScriptRoot "../results/picotron-effects.csv"),
   [ValidateRange(1, 600)]
@@ -63,9 +64,17 @@ try {
 
   $csvLines = @($lines | Where-Object { $_ -notmatch '^VFX8_PICOTRON_BENCH,PASS,' } | ForEach-Object { $_ -replace '^VFX8_PICOTRON_BENCH,', '' })
   if ($csvLines.Count -ne ($expected + 1)) { throw "Picotron benchmark output is missing its CSV header or data rows." }
-  $runtimeLog = Get-Content -LiteralPath (Join-Path $testHome "log.txt") -Raw
-  $versionMatch = [regex]::Match($runtimeLog, 'booting picotron ([^\r\n]+)')
-  $runtimeVersion = if ($versionMatch.Success) { $versionMatch.Groups[1].Value.Trim() } else { "unavailable" }
+  $runtimeVersion = $null
+  $runtimeLogPath = Join-Path $testHome "log.txt"
+  if (Test-Path -LiteralPath $runtimeLogPath -PathType Leaf) {
+    $runtimeLog = Get-Content -LiteralPath $runtimeLogPath -Raw
+    $versionMatch = [regex]::Match($runtimeLog, 'booting picotron ([^\r\n]+)')
+    if ($versionMatch.Success) { $runtimeVersion = $versionMatch.Groups[1].Value.Trim() }
+  }
+  if (-not $runtimeVersion) {
+    $statVersion = ($csvLines[1] -split ',')[0]
+    $runtimeVersion = if ($RuntimeVersion) { "$RuntimeVersion (stat(5)=$statVersion)" } else { "unavailable (stat(5)=$statVersion)" }
+  }
   for ($i = 1; $i -lt $csvLines.Count; $i++) { $csvLines[$i] = $csvLines[$i] -replace '^0x[0-9a-fA-F]+,', "$runtimeVersion," }
   $parent = Split-Path -Parent $outputPath
   if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }

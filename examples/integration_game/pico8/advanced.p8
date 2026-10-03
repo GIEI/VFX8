@@ -39,7 +39,7 @@ local function configure_entry()
   effect=create_effect(entry[1]); selected_group=entry[1]
  elseif effect and effect.clear then effect:clear() end
  if entry[1]==5 then
-  if entry[2]=="mode7" then prepare_mode7_texture(); effect:set_mode7({width_tiles=16,height_tiles=16,scale=0.55})
+  if entry[3]=="mode7" then prepare_mode7_texture(); effect:set_mode7({width_tiles=16,height_tiles=16,scale=0.55})
   else effect:set_mode7(false) end
  end
 end
@@ -47,7 +47,7 @@ local function handoff()
  load("main.p8","BACK TO VFX8 CORE",tostr(player.x)..","..tostr(player.y))
 end
 local function trigger_effect()
- local mode=entry[2]
+ local mode=entry[3]
  if entry[1]==5 then effect:add_object((player.x-w/2)/(w/2)*0.7,90,11,6)
  elseif entry[1]==6 then
   if mode=="jet" then effect:emit_jet(player.x,player.y,1,-0.12)
@@ -60,7 +60,7 @@ local function update_game()
  player.x=max(4,min(w-4,player.x+dx*player.speed/60))
  player.y=max(top+4,min(bottom-4,player.y+dy*player.speed/60))
  clock+=1/60
- if entry[1]==6 and entry[2]=="campfire" then effect:emit_campfire(player.x,player.y+8,{count=2,radius=3}) end
+ if entry[1]==6 and entry[3]=="campfire" then effect:emit_campfire(player.x,player.y+8,{count=2,radius=3}) end
  effect:update(1/60)
  if entry[1]==5 then effect:set_road(nil,nil,sin(clock*0.25)*0.35) end
 end

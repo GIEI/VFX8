@@ -78,6 +78,32 @@ class IntegrationGameTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, source)
 
+    def test_variant_dispatch_uses_catalog_identifiers_in_every_engine(self) -> None:
+        sources = (
+            ROOT / "examples/integration_game/love2d/main.lua",
+            ROOT / "examples/integration_game/picotron/main.lua",
+            ROOT / "examples/integration_game/tic80/main.lua",
+            ROOT / "examples/integration_game/pico8/main.p8",
+            ROOT / "examples/integration_game/pico8/advanced.p8",
+        )
+        wrong_label_comparisons = re.compile(
+            r'entry\[2\]\s*==\s*"(?:'
+            r'trauma|left|right|shockwave|flash|wave|rotation|squash|ordered|checker|spiral|'
+            r'cycle|night|sepia|mono|glow|damage|negative|dusk|mode7|stars|object|jet|campfire|branched|clean'
+            r')"'
+        )
+        for path in sources:
+            source = path.read_text(encoding="utf-8")
+            with self.subTest(path=path):
+                self.assertRegex(source, r"local mode\s*=\s*entry\[3\]")
+                self.assertIsNone(wrong_label_comparisons.search(source))
+        for engine in ("love2d", "picotron", "tic80"):
+            source = (ROOT / "examples/integration_game" / engine / "main.lua").read_text(encoding="utf-8")
+            with self.subTest(engine=engine):
+                self.assertIn("effect:visible", source)
+                self.assertRegex(source, r'entry\[3\]\s*==\s*"wave"')
+                self.assertRegex(source, r'entry\[3\]\s*==\s*"rotation"')
+
     def test_each_engine_project_contains_current_local_module_copies(self) -> None:
         for engine in ("pico8", "picotron", "tic80", "love2d"):
             for module in MODULES:

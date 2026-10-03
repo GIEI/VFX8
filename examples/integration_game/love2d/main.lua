@@ -98,12 +98,12 @@ local function configure_entry()
     selected_group = entry[1]
   end
   if entry[1] == 4 then
-    if entry[2] == "cycle" then effect:set_cycle(8, 11, 2)
-    elseif entry[2] == "night" or entry[2] == "sepia" or entry[2] == "mono" then effect:set_filter(entry[2])
-    elseif entry[2] == "glow" then effect:set_pulse(8, 10, 3)
-    elseif entry[2] == "dusk" then effect:set_filter_map(dusk_map) end
+    if entry[3] == "cycle" then effect:set_cycle(8, 11, 2)
+    elseif entry[3] == "night" or entry[3] == "sepia" or entry[3] == "mono" then effect:set_filter(entry[3])
+    elseif entry[3] == "glow" then effect:set_pulse(8, 10, 3)
+    elseif entry[3] == "dusk" then effect:set_filter_map(dusk_map) end
   elseif entry[1] == 5 then
-    if entry[2] == "mode7" then effect:set_mode7(mode7_texture, {scale = 0.09})
+    if entry[3] == "mode7" then effect:set_mode7(mode7_texture, {scale = 0.09})
     else effect:set_mode7(false) end
   end
   dissolve_time = nil
@@ -115,7 +115,7 @@ local function next_entry()
 end
 
 local function trigger_effect()
-  local mode = entry[2]
+  local mode = entry[3]
   if entry[1] == 1 then
     local preset, shape = entry[3], entry[4]
     if shape == "line" then effect:emit_line(preset, math.max(8, player.x - 48), player.y, math.min(width - 8, player.x + 48), player.y, {spread = 2})
@@ -154,7 +154,7 @@ local function update_game(dt)
   player.x = math.max(8, math.min(width - 8, player.x + dx * player.speed * dt))
   player.y = math.max(play_top + 8, math.min(play_bottom - 8, player.y + dy * player.speed * dt))
   clock = clock + dt
-  if entry[1] == 6 and entry[2] == "campfire" then
+  if entry[1] == 6 and entry[3] == "campfire" then
     campfire_x, campfire_y = player.x, player.y + 12
     effect:emit_campfire(campfire_x, campfire_y, {count = 5, radius = 5})
   end
@@ -172,7 +172,7 @@ local function set_index_color(index)
 end
 
 local function draw_pixel_grid()
-  local rotating = entry[2] == "rotation"
+  local rotating = entry[3] == "rotation"
   local left, top, right, bottom = 0, play_top, width, play_bottom
   if rotating then
     effect:set_rotation(player.x, player.y, clock * 0.45)
@@ -220,7 +220,7 @@ local function draw_world()
     love.graphics.rectangle("fill", 0, 0, width, height)
     set_index_color(2)
     love.graphics.rectangle("fill", 0, play_top, width, play_bottom - play_top)
-    if entry[1] == 3 and (entry[2] == "wave" or entry[2] == "rotation") then
+    if entry[1] == 3 and (entry[3] == "wave" or entry[3] == "rotation") then
       draw_pixel_grid()
     else
       set_index_color(13)
@@ -230,18 +230,18 @@ local function draw_world()
   end
 
   set_index_color(8)
-  if entry[1] == 3 and (entry[2] == "ordered" or entry[2] == "checker" or entry[2] == "spiral") and dissolve_time then
+  if entry[1] == 3 and (entry[3] == "ordered" or entry[3] == "checker" or entry[3] == "spiral") and dissolve_time then
     local amount = math.min(1, dissolve_time / 0.8)
     for iy = 0, 15 do
       for ix = 0, 15 do
-        if effect:visible(player.x - 8 + ix, player.y - 8 + iy, amount, entry[2]) then
+        if effect:visible(player.x - 8 + ix, player.y - 8 + iy, amount, entry[3]) then
           love.graphics.rectangle("fill", math.floor(player.x - 8 + ix), math.floor(player.y - 8 + iy), 1, 1)
         end
       end
     end
   else
     local sx, sy = 1, 1
-    if entry[1] == 3 and entry[2] == "squash" then sx, sy = effect:scale() end
+    if entry[1] == 3 and entry[3] == "squash" then sx, sy = effect:scale() end
     local w, h = math.max(4, math.floor(16 * sx)), math.max(4, math.floor(16 * sy))
     love.graphics.rectangle("fill", math.floor(player.x - w / 2), math.floor(player.y - h / 2), w, h)
   end
