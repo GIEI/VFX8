@@ -18,7 +18,7 @@ This checklist summarizes the remaining work required for a dependable first pub
 - [x] **Add a reproducible CI gate** for the portable Python contracts, include/build steps, and demo staging. Native runtime requirements and checks that remain manual are documented.
 - [x] **Prepare a clean download package:** `python tools/package_release.py --version 0.1.0-rc.1` creates a source archive containing the library, docs and screenshots, examples, tests, benchmarks, tools, changelog, release notes, and MIT license while excluding generated build/runtime data.
 - [x] **Review the repository diff and leave a clean, tested release commit.** The release metadata is limited to the `0.1.0-rc.1` notes, changelog, checklist, and README; the release candidate will be tagged from the clean tested `main` checkout.
-- [ ] **Confirm the GitHub repository's public visibility and publish the tagged release** with source archive, compatibility matrix, supported engine versions, and links to demos. The `origin` remote is configured; the repository's current public visibility has not been verified here.
+- [x] **Confirm the GitHub repository's public visibility and publish the tagged release.** `GIEI/VFX8` is public. The `v0.1.0-rc.1` pre-release is published with the source archive, compatibility matrix, supported engine versions, and demo links: https://github.com/GIEI/VFX8/releases/tag/v0.1.0-rc.1.
 
 ## Already in place
 
