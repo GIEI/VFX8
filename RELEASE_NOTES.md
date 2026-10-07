@@ -1,4 +1,4 @@
-# VFX8 0.1.0 — Release Candidate Notes
+# VFX8 0.1.0-rc.1 — First Public Release Candidate
 
 VFX8 is a modular visual effects library for PICO-8, Picotron, LÖVE, and TIC-80. Each effect can be integrated into an existing game's callbacks without replacing its main loop.
 
@@ -14,7 +14,18 @@ VFX8 is a modular visual effects library for PICO-8, Picotron, LÖVE, and TIC-80
 
 ## Compatibility and verification
 
-All seven effects have engine-specific implementations, examples, and dedicated documentation. The user confirms native visual checks are complete on all four engines and native performance measurements are complete on PICO-8 and TIC-80. Detailed PICO-8/TIC-80 measurement values are not included in this candidate; Picotron and LÖVE all-effect benchmark reports are included under `benchmarks/results/`.
+All seven effects have engine-specific implementations, examples, and dedicated documentation. The [integration game](examples/integration_game/README.md) keeps its own input, update, and draw callbacks. Each effect guide contains a PICO-8 screenshot generated from the corresponding native module.
+
+| Engine | Version exercised | Verification in this candidate |
+| --- | --- | --- |
+| PICO-8 | Version not recorded | Native profile contracts and screenshot carts pass. Previous user visual checks cover the effects; new optional parameters still need a complete manual pass. |
+| Picotron | 0.3.0d | Native profile smoke passes for all seven modules and covered variants; previous user visual checks cover the integration game. |
+| LÖVE | 11.5.0 | Portable contracts and staging pass. Native contracts could not initialize the user filesystem here; previous user visual checks cover the prior implementation. |
+| TIC-80 | 1.2.0 | Include build and portable contracts pass; no native executable is available here. Previous user visual checks cover the prior implementation. |
+
+The portable suite passes 44 tests with one environment-dependent LÖVE test skipped. PICO-8 native contracts and Picotron native smoke pass. TIC-80 include generation succeeds. Detailed user-run PICO-8/TIC-80 performance numbers have not been recorded in the repository. Picotron and LÖVE reports are available under `benchmarks/results/`; they predate the newly added optional effect parameters and should be treated as baseline measurements, not measurements of every new setting.
+
+This is a pre-release because resource evidence and full parameter retesting remain incomplete. See `docs/release-checklist.md` and `benchmarks/performance-checklist.md` for the remaining work.
 
 Run portable checks from the repository root with:
 

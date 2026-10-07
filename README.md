@@ -126,7 +126,7 @@ See the [public release checklist](docs/release-checklist.md) for the remaining 
 
 Run portable contracts and available native runtime checks with [`tests/run-regression.ps1`](tests/run-regression.ps1). See [`tests/README.md`](tests/README.md) for coverage, runtime requirements, and skip behavior. The portable regression path runs in GitHub Actions.
 
-Create a clean source archive with `python tools/package_release.py --version 0.1.0`. The packager includes source, docs, examples, tests, benchmark reports, and license files while omitting generated build folders, caches, and local runtime data. By default it writes to `.tmp/`.
+Create a clean source archive with `python tools/package_release.py --version 0.1.0-rc.1`. The packager includes source, docs, screenshots, examples, tests, benchmark reports, and license files while omitting generated build folders, caches, and local runtime data. By default it writes to `.tmp/`.
 
 ## Contributing
 
