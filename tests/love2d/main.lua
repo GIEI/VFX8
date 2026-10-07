@@ -1,7 +1,7 @@
 function love.load()
   local event_quit = love.event.quit
   local ok, err = xpcall(function()
-    local names = {"particle_contract.lua", "pseudo3d_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua"}
+    local names = {"particle_contract.lua", "pseudo3d_contract.lua", "pixel_deform_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua"}
     for i = 1, #names do
       local contract, load_error = love.filesystem.load(names[i])
       assert(contract, load_error)

@@ -43,6 +43,33 @@ Copy `build/main.lua` to TIC-80's working folder, then run `import code main.lua
 
 Each project has its own copy of the engine modules in its `vfx8/` directory. This keeps the examples self-contained and makes each include point directly to the matching engine implementation.
 
+## Tuning pixel deformation and palette effects
+
+The integration game intentionally starts with the same neutral/default settings as the library demos. To change them, edit only the active module setup in that engine's `main` file. Existing input, movement, update, and draw callbacks remain owned by the game.
+
+```lua
+-- Pixel deformation: defaults match the current library behavior.
+local deform = vfx8_pixel_deform.new({
+  amplitude = 2, wavelength = 16, speed = 1, wave_phase = 0,
+  axis = "y", direction = 1,
+  overshoot = 0, easing = "sine", anchor_x = 0.5, anchor_y = 0.5,
+  amount = 0, mode = "ordered", dissolve_direction = "in", seed = 0,
+  warp_amplitude = 2, warp_wavelength = 16, frequency = 0,
+  scroll_speed_x = 0, scroll_speed_y = 0, rotation = 0,
+  center_x = 0, center_y = 0, sample_step = 4
+})
+
+-- Palette remapping affects only colors passed through map_color().
+local palette = vfx8_palette_fx.new({color_count = 16})
+palette:set_cycle(8, 11, 2, 1, 0)
+palette:set_pulse(8, 10, 2, 0, 0.5)
+palette:set_filter("night", 0) -- zero keeps the original immediate filter switch
+```
+
+Call `deform:update(dt)` and `palette:update(dt)` from the game's existing update callback. In the draw callback, apply `wave_offset()` to the requested axis, anchor `scale()` around its returned normalized anchor, query `visible()` for dissolve pixels, and pass texture sample coordinates through `warp_point()`. The module does not replace the game's texture renderer. Apply `palette:map_color(index)` only to the scene draw calls that should be remapped; use the returned index to select an RGB entry before `love.graphics.setColor()` in LÖVE.
+
+The constructor values above are the library defaults. Leaving them as shown does not change the example's startup appearance. Runtime setters are also available for changing values only when an in-game event needs them, such as `deform:set_squash(...)`, `deform:set_dissolve(...)`, `palette:flash(...)`, or `palette:set_priority(...)`.
+
 ## Quick validation
 
 1. Start the engine project using the instructions above. The playfield should show the square and a centered `effect / variant` header.

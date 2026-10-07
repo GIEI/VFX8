@@ -2,6 +2,8 @@
 
 `palette_fx` maps palette indices for color cycling, local flashes, glow pulses, temporary palette negatives, and day/night, sepia, and monochrome filters. It does not change the engine's global palette or framebuffer. Apply `map_color()` to the color argument of draw calls that should receive an effect; leave UI and unrelated objects unmapped.
 
+![PICO-8 palette cycling and color remapping screenshot](images/palette_fx.png)
+
 ## Support and status
 
 | Engine | Module | Integration | Status |
@@ -116,6 +118,7 @@ palette:clear()
 - `set_invert_palette(rgb_palette)` accepts an RGB triple per configured index, with components in the 0..1 range, and builds a nearest-color negative lookup once. It returns `false` if the palette is incomplete or malformed.
 - `invert(duration)` temporarily applies that lookup and returns `false` until a valid RGB palette has been configured. `clear_invert()` ends it immediately.
 - `map_color(index)` composes effects in this order: cycle, filter, pulse, temporary inversion, then flash. Indices outside the configured color range pass through unchanged.
+- `set_priority(order)` changes that composition order. Supply each of `cycle`, `filter`, `pulse`, `invert`, and `flash` exactly once; invalid orders return `false` without changing the active order.
 - `update(dt)` advances timers, clamps `dt` to 0..0.1 seconds, and allocates no tables. `clear()` resets the instance to its neutral mapping.
 
 For a four-color palette, a custom map can be configured like this:
@@ -142,3 +145,45 @@ Filters are direct index substitutions, not RGB color grading, so their output d
 ## State and interactions
 
 The module owns only its instance state. It does not call `pal()`, `palt()`, alter LÖVE colors, or leave camera, clipping, or draw state changed. Apply `map_color()` only to scene elements that should participate. `flash()` affects mapped indices in its selected range; whole-screen flashes belong to `screen_fx`.
+
+## Configurable parameters
+
+Existing behavior remains the default: cycle direction `1` and phase `0`, pulse duty `0.5`, full flash intensity with a single target color, immediate palette filters, RGB-nearest inversion, and the effect priority `cycle → filter → pulse → invert → flash`.
+
+```lua
+local palette = vfx8_palette_fx.new({quality = "low", color_count = 16})
+palette:set_cycle(8, 11, 2, -1, 0.25) -- range, rotations/second, direction, phase
+palette:set_pulse(8, 10, 3, 0.1, 0.35) -- palette indices, cycles/second, phase, B-color duty
+palette:set_filter("night", 0.4) -- transition time in seconds
+palette:set_filter_map({0, 1, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, 0.25)
+palette:flash(8, 11, 7, 0.2, 0.5, {7, 10, 9}, 12) -- range, target, duration, coverage, target sequence, steps/second
+palette:set_invert_palette(rgb_palette, "luminance") -- also supports "rgb" or "reverse"
+palette:invert(0.18)
+palette:set_priority({"cycle", "pulse", "filter", "invert", "flash"})
+```
+
+`set_cycle(first, last, rate, direction, phase)` rotates the inclusive range. Direction must be `1` or `-1`; phase is measured in range-rotation cycles. `set_pulse(first, second, frequency, phase, amount)` uses two palette indices and makes the second index visible for `amount` of each cycle (0..1); the default 0.5 matches the original alternating pulse. `flash(first, last, target, duration, intensity, sequence, sequence_rate)` limits coverage to the first `intensity` fraction of the selected input range. An optional sequence of valid palette indices replaces the single target and advances at `sequence_rate` steps per second. Invalid sequences return `false`. These are indexed-color operations: intensity selects coverage; it does not blend colors.
+
+`set_filter(name, transition_duration)` and `set_filter_map(map, transition_duration)` can transition between maps. Because an indexed palette cannot represent a continuous blend without RGB palette access, this helper interpolates target index numbers and rounds to a valid index. For perceptually smooth color grading, animate the actual palette colors in the game renderer. `set_invert_palette(rgb_palette, matching)` precomputes a negative lookup using nearest RGB complement (`rgb`, default), nearest complementary luminance (`luminance`), or reversed index order (`reverse`). RGB and luminance matching require one normalized RGB triple per configured color. `invert(duration)` still applies the lookup temporarily.
+
+The `priority` constructor setting is not required; configure priority with `set_priority()` so invalid lists can be reported. The default mapping is unchanged. All engines support index remapping. PICO-8 and TIC-80 have 16 configurable indices; Picotron supports up to 64, although built-in night/sepia/mono maps still define only the first 16 entries. LÖVE maps indices through the game's RGB palette table and cannot infer index colors from arbitrary RGB draw calls. No module changes engine-global palette registers; apply `map_color()` to colors in your own draw calls.
+
+### External-project example
+
+Copy only the engine-specific `palette_fx.lua` into the external game's `vfx8/` folder. The game keeps its callbacks and maps only the desired actor colors:
+
+```lua
+-- PICO-8: add #include vfx8/palette_fx.lua to the cart.
+local palette = vfx8_palette_fx.new({color_count = 16})
+palette:set_cycle(8, 11, 1.5, 1, 0)
+
+function update_game()
+  palette:update(1 / 60)
+end
+
+function draw_enemy(x, y)
+  rectfill(x, y, x + 7, y + 7, palette:map_color(8))
+end
+```
+
+Picotron uses `include("vfx8/palette_fx.lua")`; TIC-80 uses `--#include "vfx8/palette_fx.lua"` during its code build; LÖVE loads `require("vfx8.palette_fx")` and uses the mapped index to choose an entry from its RGB palette before calling `love.graphics.setColor()`. Avoid mapping HUD/UI colors unless they should share the effect.

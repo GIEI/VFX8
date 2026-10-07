@@ -2,6 +2,8 @@
 
 `pseudo3d` draws a perspective ground plane with an optional animated Mode 7 texture, a layered starfield, and depth-projected objects. It does not own the game loop, camera, or palette. The fantasy-console backends use each engine's native textured-line or bounded sprite-memory sampling path; the LÖVE backend uses a fragment shader. The untextured road remains available when `set_mode7(false)` is selected.
 
+![PICO-8 pseudo-3D road and projected objects screenshot](images/pseudo3d.png)
+
 ## Support status
 
 | Engine | Module | Integration | Runtime status |
@@ -94,11 +96,14 @@ Draw game-owned sprites after the road raster. `project_road()` returns the matc
 ## API
 
 - `new(options)` creates one independent scene. `width` and `height` describe its logical viewport. `quality` is `low`, `medium`, or `high`.
+- `new(options)` accepts `horizon`, `camera_height`, `road_width`, `camera_x`, `speed`, `perspective`, `curve`, and `curve_strength`. Omitted values preserve the original defaults. `perspective` scales projected depth and must be positive; it defaults to `0.62`.
+- Starfield controls are `star_count`, `star_speed`, `star_parallax`, `star_layers`, `star_near`, `star_far`, and `star_seed`. The defaults retain the original star count for the selected quality profile, speed `1`, parallax `0.08`, three layers, and the original deterministic sequence. `star_near`/`star_far` enable a custom depth range. Counts and layer values are clamped to engine limits.
+- `lane_count` sets road markings and is clamped by the engine. PICO-8 additionally accepts `mode7_width` (horizontal texture coverage, `0.25` to `1`); its profile defaults remain 55%, 75%, and 100%.
 - `update(dt)` advances the road and stars; time steps are clamped to 0.1 seconds.
 - `draw(colors)` renders the entire pseudo-3D scene. Fantasy-console color options are palette indices: `sky`, `ground`, `road_a`, `road_b`, `edge`, and optional `stars = {near, middle, far}`. LÖVE uses RGB color arrays instead.
 - `set_road(width, lanes, curve, curve_strength)` updates optional road width, lane count, and bend without reallocating. `curve` is signed: positive bends screen-right and negative screen-left. `curve_strength` is the maximum screen-space bend scale. Lane count is clamped by each engine.
-- `set_mode7(texture, options)` enables the textured ground plane; `set_mode7(false)` restores the procedural road. It returns `true` when enabled and `false` for an invalid resource or unavailable LÖVE shader. Angles are radians in Picotron, TIC-80, and LÖVE, and turns in PICO-8. `scale` controls world-to-texture repetition; increase it for denser texture tiling. PICO-8 reads its map texture and accepts power-of-two `width_tiles` and `height_tiles`. Its `new({mode7_width = fraction})` option and texture's `width_fraction` option control horizontal coverage, clamped from 0.25 to 1; uncovered ground uses `colors.ground`. Defaults are 0.55, 0.75, and 1 for low, medium, and high quality. Picotron accepts a `userdata("u8", width, height)` texture via `source`, with power-of-two dimensions and an optional `high_quality = true` sampling flag. TIC-80 reads an aligned power-of-two region from the 128×128 sprite sheet (`x`, `y`, `width`, `height`); its low/medium/high profiles sample 4×4, 2×2, and 1×1 blocks. LÖVE accepts an `Image` plus `{scale = number, angle = radians}` and requires fragment shader support.
-- `add_object(lateral, depth, color, size)` adds a square projected object. Positive lateral values move right; larger depth values are farther away. With `project_road`, lateral is normalized across road half-width (`-1` left edge, `0` center, `1` right edge). It returns `false` when the fixed object pool is full.
+- `set_mode7(texture, options)` enables the textured ground plane; `set_mode7(false)` restores the procedural road. It returns `true` when enabled and `false` for an invalid resource or unavailable LÖVE shader. `options.scale` controls world-to-texture repetition; `options.angle` rotates the sampled ground (radians in Picotron, TIC-80, and LÖVE; turns in PICO-8); `scroll_speed_x` and `scroll_speed_y` scroll the texture in UV units per second. Their defaults are zero. PICO-8 reads its map texture and accepts power-of-two `width_tiles` and `height_tiles`, `offset_x`/`offset_y`, and `width_fraction`; uncovered ground uses `colors.ground`. `width_fraction` is clamped from 0.25 to 1, defaulting to the quality profile's 0.55, 0.75, or 1. Picotron accepts a `userdata("u8", width, height)` texture via `source`, with power-of-two dimensions and optional `high_quality = true` sampling flag. TIC-80 reads an aligned power-of-two region from the 128×128 sprite sheet (`x`, `y`, `width`, `height`); its low/medium/high profiles sample 4×4, 2×2, and 1×1 blocks. TIC-80 also accepts `sample_step` from 1 to 4 to choose the sampling block. LÖVE accepts an `Image` and requires fragment shader support. Texture scrolling and angle are sampled by the renderer; they do not modify the caller's texture.
+- `add_object(lateral, depth, color, size, options)` adds a square projected object. Positive lateral values move right; larger depth values are farther away. `options.speed` overrides this instance's travel speed and `options.z_order` sets its draw-order depth without changing its projection depth. Defaults use the scene speed and object depth, preserving prior behavior. With `project_road`, lateral is normalized across road half-width (`-1` left edge, `0` center, `1` right edge). It returns `false` when the fixed object pool is full.
 - `project(lateral, depth, size)` returns screen `x`, `y`, and projected size for drawing the game's own sprites with the same camera projection.
 - `project_road(lateral, depth, size)` uses the road width and bend as well as camera projection, so custom sprites follow the visible road.
 - `clear_objects()` removes projected objects.
@@ -106,6 +111,40 @@ Draw game-owned sprites after the road raster. `project_road()` returns the matc
 - `clear()` removes objects and resets the travel distance.
 
 Call `add_object` when a game event occurs; objects travel toward the camera at the configured speed and expire near the camera. Use `project_road(lateral, depth, size)` to place a game-owned sprite on the same road curve. Stars use a deterministic sequence and do not change the game's random generator. Draw the pseudo-3D scene before HUD elements. The `draw` call intentionally owns the scene area it is given; wrap it in the game's clipping or off-screen-buffer policy if it should occupy only part of the screen. PICO-8 defaults to a 128×96 logical scene so the standard 128×128 screen retains room for a HUD.
+
+### Configuring a game-owned scene
+
+Keep the scene instance in the game, create it once, and update/draw it from the callbacks that already belong to the game. This LÖVE example shows texture scrolling, custom star motion, and a per-object speed without replacing the game loop:
+
+```lua
+local scene = require("vfx8.pseudo3d").new({
+  quality = "high",
+  speed = 18,
+  perspective = 0.62, -- original default
+  star_speed = 1,     -- original default
+  star_parallax = 0.08,
+  star_count = 96
+})
+scene:set_mode7(road_texture, {
+  scale = 0.09,
+  scroll_speed_x = 0.02,
+  scroll_speed_y = 0.35
+})
+scene:add_object(0.35, 90, 1, 12, {speed = 24, z_order = 90})
+
+function love.update(dt)
+  update_game(dt)
+  scene:update(dt)
+end
+
+function love.draw()
+  scene:draw()
+  draw_game_objects() -- draw custom actors after the road, with project_road()
+  draw_ui()
+end
+```
+
+On fantasy consoles, keep all optional values at their existing defaults unless the game needs the tuning. TIC-80's `sample_step`, Picotron's `high_quality`, and PICO-8's `width_fraction` are backend-specific performance/coverage controls; they are not interchangeable because the engines expose different texture APIs.
 
 ## Resource profiles
 

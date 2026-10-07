@@ -58,10 +58,16 @@ local function damage_enemy(enemy, damage)
     enemy.alive = false
     particles:emit("explosion", enemy.x, enemy.y, {
       count = 28,
-      speed = 58,
+      radius = 2,
+      emission_shape = "disc",
+      min_speed = 38,
+      max_speed = 62,
       gravity = 12,
       life = 0.45,
-      spread = 1
+      drag = 0.7,
+      start_size = 3,
+      end_size = 0,
+      colors = {10, 9, 7}
     })
   end
 end
@@ -79,7 +85,7 @@ function love.draw()
 end
 ```
 
-`enemy.alive` prevents repeated hits from emitting duplicate explosions after defeat. Use the enemy's actual center coordinates and tune `count`, `speed`, `gravity`, `life`, and `spread` to match the game's scale. For multiple enemies, pass the defeated enemy to the same handler; the particle system's fixed capacity and emission limit keep the cost bounded.
+`enemy.alive` prevents repeated hits from emitting duplicate explosions after defeat. Use the enemy's actual center coordinates and tune the options to match the game's scale. `min_speed`/`max_speed` set the burst velocity range, `radius`/`emission_shape` set its origin spread, `start_size`/`end_size` control pixel size, and `colors` selects its palette ramp. For multiple enemies, pass the defeated enemy to the same handler; the particle system's fixed capacity and emission limit keep the cost bounded. See [`docs/integration.md`](docs/integration.md) for complete callback examples on all four engines and each [effect page](docs/effects/) for every parameter and its engine-specific limits.
 
 ## Effects
 

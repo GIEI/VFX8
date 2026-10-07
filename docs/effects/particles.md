@@ -2,6 +2,8 @@
 
 The particle system provides compact, reusable feedback for impacts and movement. It includes explosions, sparks, trails, smoke, and dust, with point, line, and rectangular-area emission. Each implementation uses a fixed-capacity structure-of-arrays pool and indexed-color drawing on fantasy consoles.
 
+![PICO-8 particle burst screenshot](images/particles.png)
+
 ## Support and status
 
 | Engine | Module | Include method | Runtime verification |
@@ -93,7 +95,12 @@ local system = vfx8_particles.new({
   seed = 1             -- optional deterministic emission sequence
 })
 
-system:emit("explosion", x, y, {count = 20, speed = 48, gravity = 20, drag = 0.7, life = 0.5, end_size = 0, spread = 0})
+system:emit("explosion", x, y, {
+  count = 20, min_speed = 36, max_speed = 64, life = 0.5,
+  radius = 3, emission_shape = "disc", gravity = 20,
+  drag = 0.7, wind = {x = 0, y = 2}, start_size = 3,
+  end_size = 0, colors = {10, 9, 7}
+})
 system:emit_line("sparks", x1, y1, x2, y2, {spread = 2})
 system:emit_area("smoke", x, y, width, height)
 system:update(dt) -- dt is seconds; defaults to 1/60 and is clamped to 0..0.1
@@ -102,7 +109,63 @@ system:clear()
 local active, capacity, last_interval_emissions = system:stats()
 ```
 
-Preset names are `explosion`, `sparks`, `trail`, `smoke`, and `dust`. `count`, `speed`, `gravity`, `drag`, `life`, `end_size`, and `spread` override preset defaults. Zero is a valid override for numeric options, including `end_size = 0`; lifetime is clamped to a minimum of 0.05 seconds. Gravity is in pixels per second squared, speed in pixels per second, and lifetime in seconds. Positive gravity points down. Drag reduces velocity linearly each update. A line distributes particles along its endpoints; area emission samples a rectangle extending right and down from `(x, y)`. Point emission uses `spread` as symmetric positional jitter.
+Preset names are `explosion`, `sparks`, `trail`, `smoke`, and `dust`. Every option is optional; omitted fields retain the preset's existing values.
+
+| Option | Meaning |
+| --- | --- |
+| `count` | Requested particle count, bounded by pool and per-update budgets. |
+| `speed` | Base speed used by the preset's existing random speed range. |
+| `min_speed`, `max_speed` | Explicit inclusive speed interval; when either is set, this replaces the preset random range. |
+| `direction` | Optional normalized direction vector `{x = ..., y = ...}` (or `{dx, dy}` array). It overrides the preset's radial/ambient direction. A zero vector creates stationary particles. |
+| `direction_spread` | Random sideways velocity ratio around `direction`; `0` is straight, `1` allows sideways speed up to the forward speed. |
+| `life` | Particle lifetime in seconds, clamped to at least `0.05`. |
+| `radius`, `emission_shape` | For point emission only: `"ring"` places particles on a ring of this radius; `"disc"` distributes them inside it. Supplying `radius` without a shape defaults to `"disc"`. With neither option, particles spawn at the point as before. |
+| `gravity` | Vertical acceleration in pixels/second²; positive values point down. |
+| `drag` | Linear velocity reduction per second. |
+| `wind` | Constant acceleration vector in pixels/second², as `{x, y}` or `{x, y}` array. |
+| `start_size`, `size`, `end_size` | Initial and final square size in pixels. `size` is an alias for `start_size`; zero is valid. |
+| `colors` | Three palette indices `{start, middle, end}` interpolated as three age bands. Fantasy consoles use native palette indices; LÖVE accepts the same PICO-8 palette indices. |
+| `spread` | Existing positional jitter for point emission and line jitter. |
+| `spacing` | Optional spacing in pixels for `emit_line`; the requested count is derived from segment length and then clamped by budgets. This is useful for evenly spaced trail marks. |
+
+The current renderers draw axis-aligned square pixels. Nonzero `rotation` or `angular_speed` options raise an explicit error instead of being silently ignored. Gravity, speed, wind, and lifetime use pixels, seconds, and pixels/second². Drag reduces velocity linearly each update. A line distributes particles along its endpoints; area emission samples a rectangle extending right and down from `(x, y)`. Ring/disc placement is currently limited to point emission. `colors` values must be valid engine palette indices (0–15 for PICO-8 palette mapping); custom RGB ramps and rotated particle geometry are not supported by these fixed-pixel renderers.
+
+### Triggering an explosion from an enemy defeat
+
+Keep the library inside the game-owned callbacks. Include/require the particle module once, update it once per game tick, and call `emit` in the enemy's defeat handler. The following LÖVE example can be adapted to the other engine-specific include syntaxes above:
+
+```lua
+local particles = require("vfx8.particles").new({quality = "medium", seed = 7})
+
+local function defeat_enemy(enemy)
+  if enemy.dead then return end
+  enemy.dead = true
+  particles:emit("explosion", enemy.x, enemy.y, {
+    count = 24,
+    radius = 2,
+    emission_shape = "disc",
+    min_speed = 36,
+    max_speed = 68,
+    life = 0.48,
+    gravity = 24,
+    drag = 0.7,
+    start_size = 4,
+    end_size = 0,
+    colors = {10, 9, 7}
+  })
+end
+
+function love.update(dt)
+  update_enemies(dt, defeat_enemy)
+  particles:update(dt)
+end
+
+function love.draw()
+  draw_world()
+  particles:draw()
+  draw_ui()
+end
+```
 
 `emit*` returns the number admitted. Unknown presets and exhausted budgets return zero. When capacity or the emission budget is reached, new particles are dropped; existing particles are never evicted. The emission counter resets at the end of each `update()` call. Call `update()` exactly once per simulation tick and group all emissions for that tick before it to get one shared per-tick cap. `stats()` reports the number admitted in the most recently completed tick. The random sequence is local to each system and does not alter a game's random generator.
 

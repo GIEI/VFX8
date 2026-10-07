@@ -8,6 +8,12 @@ dx, dy = fx:get_shake_offset()
 assert(dx == 0 and dy == 0, "shake offsets are sampled by update")
 fx:shockwave(60, 40, 2, 12, 0.3)
 fx:flash(0.08, {1, 1, 1})
+fx:shockwave(70, 45, 3, 8, 0.4, {center_x = 71, center_y = 46, max_radius = 55, thickness = 3, falloff = 1.4})
+fx:flash(0.12, {0.4, 0.2, 0.1}, {intensity = 0.35, mode = "invert"})
+assert(fx.waves[2].x == 71 and fx.waves[2].y == 46 and fx.waves[2].max_radius == 55,
+  "shockwave center and maximum radius options must be honored")
+assert(fx.waves[2].thickness == 3 and fx.waves[2].falloff == 1.4 and fx.flash_intensity == 0.35,
+  "wave shape and flash intensity options must be honored")
 fx:update(1 / 60)
 local first_x, first_y = fx:get_shake_offset()
 local repeated_x, repeated_y = fx:get_shake_offset()
@@ -42,7 +48,8 @@ love.graphics = {
   rectangle = function() calls.rectangles = calls.rectangles + 1 end
 }
 fx:render(function() calls.scene = calls.scene + 1 end)
-assert(calls.scene == 1 and calls.circles == 1 and calls.rectangles == 1)
+assert(calls.scene == 1 and calls.circles == 4 and calls.rectangles == 1,
+  "wave overlays must honor each configured outline thickness")
 assert(calls.canvases == 2 and calls.draws == 1 and calls.shaders == 5,
   "shockwave captures the scene and applies the shader pass")
 assert(color[1] == 0.2 and color[2] == 0.3 and color[3] == 0.4 and color[4] == 0.5,

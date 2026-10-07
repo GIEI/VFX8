@@ -34,5 +34,14 @@ assert(system:stats() == 0, "expired line segments must be removed")
 assert(system:strike(2, 3, 40, 20, {segments = 4, branches = 0}) == 4, "a clean arc must honor its requested segment count")
 system:clear()
 assert(system:stats() == 0, "clear must empty the arc system")
+local tuned = electricity_module.new({quality = "low", capacity = 24, max_emit = 20, seed = 9,
+  color = {0.2, 0.5, 1}, core_color = {1, 1, 1}, pulse_count = 2})
+local tuned_count = tuned:strike(8, 10, 70, 40, {segments = 5, branches = 2,
+  branch_probability = 0, branch_angle = 0.9, branch_length = 0.3, bolt_count = 2,
+  width = 3, life = 0.2, flicker = true})
+assert(tuned_count == 10 and tuned.capacity == 24 and tuned.max_emit == 20,
+  "parallel bolts and explicit segment budgets must be honored")
+assert(tuned.colors[1][1] == 0.2 and tuned.core_colors[1][1] == 1 and tuned.flicker_segments[1] == 1,
+  "custom colors and per-strike flicker must be stored with segments")
 love = old_love
 print("LOVE electricity runtime contract passed")

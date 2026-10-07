@@ -25,5 +25,19 @@ assert(system:stats() == 0, "expired particles must be removed")
 assert(system:emit_campfire(10, 10, {count = 2}) == 2, "campfire mode must emit from its base")
 system:clear()
 assert(system:stats() == 0, "clear must empty the system")
+local tuned = flames_module.new({capacity = 3, max_emit = 3, seed = 9})
+assert(tuned:emit_jet(12, 16, 1, 0, {
+  count = 1, distance = 24, life = 0.5, width = 8, size = 6,
+  end_size = 2, gravity = 0, drag = 0, wind = {x = 3, y = -2},
+  flicker = 0, colors = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 1}}
+}) == 1, "extended jet options must emit")
+assert(tuned.life[1] == 0.5 and tuned.size[1] == 6 and tuned.end_size[1] == 2,
+  "jet life and size options must be stored")
+assert(tuned.wind_x[1] == 3 and tuned.wind_y[1] == -2 and tuned.flicker[1] == 0,
+  "wind and flicker controls must be stored")
+assert(tuned.color_1[1][1] == 1 and tuned.color_2[1][2] == 1,
+  "LÖVE custom RGB flame ramp must be stored")
+assert(tuned:emit_campfire(30, 40, {emission_rate = 1, height = 12, life = 0.5, base_radius = 4}) == 1,
+  "campfire emission-rate, height, and base-radius options must be accepted")
 love = old_love
 print("LOVE flames runtime contract passed")

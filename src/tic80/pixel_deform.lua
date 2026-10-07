@@ -9,10 +9,25 @@ local pi2 = math.pi * 2
 
 function vfx8_pixel_deform.new(options)
   options = options or {}
+  local quality = options.quality or "low"
   return {quality = options.quality or "low", phase = options.phase or 0,
+    wave_amplitude = options.amplitude or 2, wave_wavelength = math.max(1, options.wavelength or 16),
+    wave_speed = options.speed or 1, wave_phase = options.wave_phase or 0,
+    wave_axis = options.axis or "y", wave_direction = options.direction or 1,
+    warp_speed_x = options.scroll_speed_x or 0, warp_speed_y = options.scroll_speed_y or 0,
+    warp_amplitude = options.warp_amplitude or options.amplitude or 2,
+    warp_wavelength = math.max(1, options.warp_wavelength or options.wavelength or 16),
+    warp_frequency = options.frequency or 0, warp_phase = options.warp_phase or 0, warp_rotation = options.rotation or 0,
+    warp_center_x = options.center_x or 0, warp_center_y = options.center_y or 0,
+    sample_step = math.max(1, math.floor(options.sample_step or (quality == "high" and 1 or quality == "medium" and 2 or 4))),
+    squash_overshoot = options.overshoot or 0, squash_easing = options.easing or "sine",
+    squash_anchor_x = options.anchor_x or 0.5, squash_anchor_y = options.anchor_y or 0.5,
+    dissolve_amount = options.amount or 0, dissolve_mode = options.mode or "ordered",
+    dissolve_direction = options.dissolve_direction or "in", dissolve_seed = options.seed or 0, dissolve_matrix = nil,
     squash_x = 1, squash_y = 1, squash_time = 0, squash_duration = 0.2,
     rotation_x = 0, rotation_y = 0, rotation_sin = 0, rotation_cos = 1,
-    wave_offset = methods.wave_offset, set_squash = methods.set_squash,
+    wave_offset = methods.wave_offset, set_wave = methods.set_wave, warp_point = methods.warp_point,
+    warp_step = methods.warp_step, set_dissolve = methods.set_dissolve, set_squash = methods.set_squash,
     update = methods.update, scale = methods.scale, visible = methods.visible,
     set_rotation = methods.set_rotation, rotate_point = methods.rotate_point,
     rotation_bounds = methods.rotation_bounds,
@@ -41,14 +56,54 @@ function methods.rotation_bounds(self, left, top, right, bottom, margin)
   return math.min(ax, bx, cx, dx) - pad, math.min(ay, by, cy, dy) - pad,
     math.max(ax, bx, cx, dx) + pad, math.max(ay, by, cy, dy) + pad
 end
-function methods.wave_offset(self, x, time, amplitude, wavelength, speed, phase)
-  wavelength = math.max(1, wavelength or 16)
-  return (amplitude or 2) * math.sin(((x / wavelength + (time or self.phase) * (speed or 1) + (phase or 0)) % 1) * pi2)
+function methods.set_wave(self, options)
+  if type(options) ~= "table" then return false end
+  local axis, direction = options.axis or self.wave_axis, options.direction or self.wave_direction
+  if (axis ~= "x" and axis ~= "y") or (direction ~= 1 and direction ~= -1) then return false end
+  self.wave_amplitude, self.wave_wavelength = options.amplitude or self.wave_amplitude, math.max(1, options.wavelength or self.wave_wavelength)
+  self.wave_speed, self.wave_phase = options.speed or self.wave_speed, options.phase or self.wave_phase
+  self.wave_axis, self.wave_direction = axis, direction
+  return true
 end
-function methods.set_squash(self, horizontal, vertical, duration)
+function methods.warp_point(self, x, y, time, options)
+  options = options or {}
+  local t, amp = time or self.phase, options.amplitude or self.warp_amplitude
+  local wavelength = math.max(1, options.wavelength or self.warp_wavelength)
+  local frequency, phase = options.frequency or self.warp_frequency, options.phase or self.warp_phase
+  local cx, cy = options.center_x or self.warp_center_x, options.center_y or self.warp_center_y
+  local dx, dy = x - cx, y - cy
+  local sx = dx + (options.scroll_speed_x or self.warp_speed_x) * t + amp * math.sin((dy / wavelength + t * frequency + phase) * pi2)
+  local sy = dy + (options.scroll_speed_y or self.warp_speed_y) * t + amp * math.sin((dx / wavelength + t * frequency + phase) * pi2)
+  local angle = options.rotation or self.warp_rotation
+  local c, sn = math.cos(angle), math.sin(angle)
+  return cx + sx * c - sy * sn, cy + sx * sn + sy * c
+end
+function methods.warp_step(self) return self.sample_step end
+function methods.set_dissolve(self, amount, mode, direction, seed, matrix)
+  if mode and mode ~= "ordered" and mode ~= "checker" and mode ~= "spiral" and mode ~= "reverse" then return false end
+  if direction and direction ~= "in" and direction ~= "out" then return false end
+  if matrix then
+    if type(matrix) ~= "table" or #matrix < 16 then return false end
+    for i = 1, 16 do if type(matrix[i]) ~= "number" or matrix[i] ~= math.floor(matrix[i]) or matrix[i] < 0 or matrix[i] > 15 then return false end end
+  end
+  self.dissolve_amount, self.dissolve_mode = amount or self.dissolve_amount, mode or self.dissolve_mode
+  self.dissolve_direction, self.dissolve_seed, self.dissolve_matrix = direction or self.dissolve_direction, seed or self.dissolve_seed, matrix or self.dissolve_matrix
+  return true
+end
+function methods.wave_offset(self, x, time, amplitude, wavelength, speed, phase, axis, direction)
+  wavelength = math.max(1, wavelength or self.wave_wavelength)
+  local cycles = (x / wavelength + (time or self.phase) * (speed or self.wave_speed)) * (direction or self.wave_direction) + (phase or self.wave_phase)
+  return (amplitude or self.wave_amplitude) * math.sin((cycles % 1) * pi2), axis or self.wave_axis
+end
+function methods.set_squash(self, horizontal, vertical, duration, overshoot, easing, anchor_x, anchor_y)
+  easing = easing or self.squash_easing
+  if easing ~= "linear" and easing ~= "smooth" and easing ~= "sine" then return false end
   self.squash_x, self.squash_y = math.max(0.1, horizontal or 1.25), math.max(0.1, vertical or 0.75)
   self.squash_duration = math.max(0.01, duration or 0.2)
+  self.squash_overshoot, self.squash_easing = overshoot or self.squash_overshoot, easing
+  self.squash_anchor_x, self.squash_anchor_y = anchor_x or self.squash_anchor_x, anchor_y or self.squash_anchor_y
   self.squash_time = self.squash_duration
+  return true
 end
 function methods.update(self, dt)
   dt = math.min(0.1, math.max(0, dt or 1 / 60))
@@ -58,13 +113,20 @@ end
 function methods.scale(self)
   if self.squash_time <= 0 then return 1, 1 end
   local t = 1 - self.squash_time / self.squash_duration
-  local envelope = math.sin(t * pi2 * 0.5)
-  return 1 + (self.squash_x - 1) * envelope, 1 + (self.squash_y - 1) * envelope
+  local envelope = self.squash_easing == "linear" and t or self.squash_easing == "smooth" and t * t * (3 - 2 * t) or math.sin(t * pi2 * 0.5)
+  envelope = envelope + self.squash_overshoot * math.sin(t * pi2)
+  return 1 + (self.squash_x - 1) * envelope, 1 + (self.squash_y - 1) * envelope, self.squash_anchor_x, self.squash_anchor_y
 end
-function methods.visible(self, x, y, amount, mode)
+function methods.visible(self, x, y, amount, mode, direction, seed, matrix)
+  amount, mode = amount == nil and self.dissolve_amount or amount, mode or self.dissolve_mode
+  direction, seed, matrix = direction or self.dissolve_direction, seed or self.dissolve_seed, matrix or self.dissolve_matrix
   local ix, iy = math.floor(x) % 4, math.floor(y) % 4
-  local threshold = (mode == "spiral" and spiral or bayer)[iy * 4 + ix + 1]
+  ix, iy = (ix + seed) % 4, (iy + math.floor(seed / 4)) % 4
+  local values = matrix or (mode == "spiral" and spiral or bayer)
+  local threshold = values[iy * 4 + ix + 1]
   if mode == "checker" then threshold = (ix + iy) % 2 * 8 end
+  if mode == "reverse" or direction == "out" then threshold = 15 - threshold end
+  amount = math.max(0, math.min(1, amount or 0))
   return threshold / 16 >= math.min(1, math.max(0, amount or 0))
 end
 function methods.clear(self)

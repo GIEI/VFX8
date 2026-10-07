@@ -58,7 +58,33 @@ class ParticleContractTests(unittest.TestCase):
             with self.subTest(engine=engine):
                 source = self.read_module(engine)
                 self.assertRegex(source, r"if life == nil then life = preset\.life end")
-                self.assertIn("0.05", source)
+        self.assertIn("0.05", source)
+
+    def test_particle_tuning_options_are_implemented_for_each_engine(self) -> None:
+        for engine in ("pico8", "picotron", "love2d", "tic80"):
+            with self.subTest(engine=engine):
+                source = (ROOT / "src" / engine / "particles.lua").read_text(encoding="utf-8")
+                for option in (
+                    "min_speed", "max_speed", "direction_spread", "emission_shape",
+                    "radius", "spacing", "wind", "start_size", "colors", "angular_speed",
+                ):
+                    self.assertIn(option, source)
+                self.assertIn("rotation and angular_speed are unsupported", source)
+
+    def test_flame_tuning_options_and_external_enemy_examples_are_documented(self) -> None:
+        for engine in ("pico8", "picotron", "love2d", "tic80"):
+            with self.subTest(engine=engine):
+                source = (ROOT / "src" / engine / "flames.lua").read_text(encoding="utf-8")
+                for option in (
+                    "distance", "width", "height", "emission_rate", "end_size",
+                    "wind", "colors", "flicker", "flicker_speed",
+                ):
+                    self.assertIn(option, source)
+        particles_page = (ROOT / "docs" / "effects" / "particles.md").read_text(encoding="utf-8")
+        flames_page = (ROOT / "docs" / "effects" / "flames.md").read_text(encoding="utf-8")
+        self.assertIn("defeat_enemy", particles_page)
+        self.assertIn("defeat_enemy", flames_page)
+        self.assertIn("Nonzero `rotation` or `angular_speed` options raise an explicit error", particles_page)
 
     def test_numeric_zero_overrides_are_preserved(self) -> None:
         for engine in ENGINES:
@@ -394,6 +420,40 @@ class ParticleContractTests(unittest.TestCase):
         self.assertIn("cycle_variant = function() rotate_screen = not rotate_screen end", adapter)
         self.assertIn('"wave + grid rotation"', adapter)
 
+    def test_pixel_deform_parameter_api_is_consistent_across_engines(self) -> None:
+        for engine in ENGINES:
+            with self.subTest(engine=engine):
+                source = (ROOT / "src" / engine / "pixel_deform.lua").read_text(encoding="utf-8")
+                bundled = (ROOT / "examples" / "integration_game" / engine / "vfx8" / "pixel_deform.lua").read_text(encoding="utf-8")
+                self.assertEqual(source, bundled, "the external-project copy must match the source module")
+                for api in ("set_wave", "wave_offset", "warp_point", "warp_step", "set_squash", "set_dissolve", "visible"):
+                    self.assertIn(api, source)
+                for option in ("wave_amplitude", "wave_wavelength", "wave_speed", "wave_axis", "wave_direction",
+                               "squash_overshoot", "squash_easing", "squash_anchor_x", "dissolve_amount",
+                               "dissolve_seed", "warp_frequency", "warp_rotation", "warp_center_x", "sample_step"):
+                    self.assertIn(option, source)
+        doc = (ROOT / "docs" / "effects" / "pixel_deform.md").read_text(encoding="utf-8")
+        self.assertIn("External-project example", doc)
+        self.assertIn("texture renderer", doc)
+        self.assertIn("defaults", doc.lower())
+
+    def test_palette_tuning_contract_and_external_integration_examples_are_documented(self) -> None:
+        for engine in ENGINES:
+            with self.subTest(engine=engine):
+                source = (ROOT / "src" / engine / "palette_fx.lua").read_text(encoding="utf-8")
+                bundled = (ROOT / "examples" / "integration_game" / engine / "vfx8" / "palette_fx.lua").read_text(encoding="utf-8")
+                self.assertEqual(source, bundled, "the external-project copy must match the source module")
+                for api in ("set_priority", "cycle_direction", "pulse_duty", "flash_sequence", "filter_transition", "invert_matching"):
+                    self.assertIn(api, source)
+                for method in ("set_cycle", "set_pulse", "flash", "set_invert_palette", "map_color"):
+                    self.assertIn(f"function methods.{method}", source)
+        doc = (ROOT / "docs" / "effects" / "palette_fx.md").read_text(encoding="utf-8")
+        self.assertIn("Configurable parameters", doc)
+        self.assertIn("External-project example", doc)
+        game = (ROOT / "examples" / "integration_game" / "README.md").read_text(encoding="utf-8")
+        self.assertIn("Tuning pixel deformation and palette effects", game)
+        self.assertIn("leaving them as shown does not change", game.lower())
+
     def test_console_demos_rotate_wave_geometry_about_the_moving_actor(self) -> None:
         demos = ("picotron/main.lua", "tic80/demo.lua")
         for demo in demos:
@@ -423,7 +483,7 @@ class ParticleContractTests(unittest.TestCase):
             game_folder = Path(temporary) / "love-contract"
             game_folder.mkdir()
             result_file = Path(temporary) / "love-contract-result.txt"
-            for name in ("main.lua", "particle_contract.lua", "pseudo3d_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua"):
+            for name in ("main.lua", "particle_contract.lua", "pseudo3d_contract.lua", "pixel_deform_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua"):
                 shutil.copy2(ROOT / "tests" / "love2d" / name, game_folder / name)
             result = subprocess.run(
                 [str(love), str(game_folder)],
@@ -440,6 +500,7 @@ class ParticleContractTests(unittest.TestCase):
             self.assertEqual(result_file.read_text(encoding="utf-8"), "passed")
             self.assertIn("LOVE particle runtime contract passed", result.stdout)
             self.assertIn("LOVE pseudo-3D runtime contract passed", result.stdout)
+            self.assertIn("LOVE pixel deformation runtime contract passed", result.stdout)
             self.assertIn("LOVE screen effects runtime contract passed", result.stdout)
             self.assertIn("LOVE palette runtime contract passed", result.stdout)
             self.assertIn("LOVE flames runtime contract passed", result.stdout)

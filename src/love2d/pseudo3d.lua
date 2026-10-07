@@ -18,9 +18,10 @@ extern float cameraX;
 extern float cameraZ;
 extern float heading;
 extern float textureScale;
+extern float perspectiveFactor;
 vec4 effect(vec4 color, Image image, vec2 texture_coords, vec2 screen_coords) {
   float vertical = max(1.0, texture_coords.y * planeSize.y);
-  float distance = cameraHeight * cameraHeight * 0.62 / vertical;
+  float distance = cameraHeight * cameraHeight * perspectiveFactor / vertical;
   float lateral = (texture_coords.x - 0.5) * planeSize.x * distance / cameraHeight;
   float cs = cos(heading);
   float sn = sin(heading);
@@ -55,6 +56,11 @@ function pseudo3d.new(options)
     camera_height = math.max(1, options.camera_height or height * 0.45),
     road_width = math.max(1, options.road_width or width * 0.55),
     camera_x = options.camera_x or 0, camera_z = 0, speed = options.speed or 18,
+    perspective = options.perspective or 0.62, star_speed = options.star_speed or 1,
+    star_parallax = options.star_parallax or 0.08, star_layers = clamp(math.floor(options.star_layers or 3), 1, 3),
+    star_near = options.star_near or 8, star_far = options.star_far or 127,
+    star_seed = options.star_seed or 0, custom_star_depth = options.star_near ~= nil or options.star_far ~= nil,
+    mode7_time = 0,
     curve = options.curve or 0, curve_strength = options.curve_strength or width * 0.32,
     mode7 = nil, mode7_angle = options.mode7_angle or 0,
     lane_count = clamp(math.floor(options.lane_count or 3), 1, 8),
@@ -69,7 +75,8 @@ function pseudo3d.new(options)
     clear = methods.clear
   }
   for i = 1, star_count do
-    self.stars[i] = {x = ((i * 73 % 127) / 63.5 - 1) * 48, y = -0.1 - (i * 47 % 127) / 127 * 0.9, z = 8 + i * 47 % 120, layer = i % 3}
+    local z = self.custom_star_depth and (self.star_near + (self.star_far - self.star_near) * ((i * 47 % 127) / 127)) or (8 + i * 47 % 120)
+    self.stars[i] = {x = (((i * 73 + self.star_seed) % 127) / 63.5 - 1) * 48, y = -0.1 - (i * 47 % 127) / 127 * 0.9, z = z, layer = i % self.star_layers}
   end
   for i = 1, object_capacity do self.objects[i] = {active = false} end
   return self
@@ -96,8 +103,10 @@ function methods.set_mode7(self, texture, options)
     return false
   end
   options = options or empty_options
-  if options.angle ~= nil then self.mode7_angle = options.angle end
-  self.mode7 = {image = texture, scale = options.scale or 0.08}
+  if options.angle ~= nil then self.mode7_angle = options.angle
+  elseif texture.angle ~= nil then self.mode7_angle = texture.angle end
+  self.mode7 = {image = texture, scale = options.scale or 0.08,
+    scroll_speed_x = options.scroll_speed_x or 0, scroll_speed_y = options.scroll_speed_y or 0}
   if not mode7_shader_attempted then
     mode7_shader_attempted = true
     local ok, shader = pcall(love.graphics.newShader, mode7_shader_source)
@@ -110,7 +119,7 @@ end
 function methods.project_road(self, lateral, z, size)
   local safe_z = math.max(2.1, z or 60)
   local scale = self.camera_height / safe_z
-  local y = self.horizon + scale * self.camera_height * 0.62
+  local y = self.horizon + scale * self.camera_height * self.perspective
   local vertical = math.max(0, y - self.horizon)
   local depth = clamp(1 - vertical / math.max(1, self.height - self.horizon), 0, 1)
   local half = self.road_width * vertical / self.camera_height
@@ -122,32 +131,35 @@ end
 function methods.update(self, dt)
   dt = clamp(dt or 1 / 60, 0, 0.1)
   self.camera_z = self.camera_z + self.speed * dt
+  self.mode7_time = self.mode7_time + dt
   for i = 1, self.star_count do
     local star = self.stars[i]
-    star.z = star.z - self.speed * dt * (0.45 + star.layer * 0.35)
+    star.z = star.z - self.speed * self.star_speed * dt * (0.45 + star.layer * 0.35)
     if star.z < 2 then
-      star.z = 100 + (i % 23) * 2
-      star.x = (((i * 73 + math.floor(self.camera_z)) % 127) / 63.5 - 1) * 48
+      star.z = self.custom_star_depth and (self.star_near + (self.star_far - self.star_near) * ((i * 47 % 127) / 127)) or (100 + (i % 23) * 2)
+      star.x = (((i * 73 + math.floor(self.camera_z) + self.star_seed) % 127) / 63.5 - 1) * 48
       star.y = -0.1 - (i * 47 % 127) / 127 * 0.9
     end
   end
   for i = self.object_count, 1, -1 do
     local object = self.objects[i]
     if object.active then
-      object.z = object.z - self.speed * dt
+      object.z = object.z - object.speed * dt
       if object.z <= 2 then object.active = false end
     end
   end
   while self.object_count > 0 and not self.objects[self.object_count].active do self.object_count = self.object_count - 1 end
 end
 
-function methods.add_object(self, x, z, color, size)
+function methods.add_object(self, x, z, color, size, options)
   local index = 1
   while index <= self.object_capacity and self.objects[index].active do index = index + 1 end
   if index > self.object_capacity then return false end
   local object = self.objects[index]
+  options = options or empty_options
   object.x, object.z = x or 0, math.max(2.1, z or 60)
   object.color, object.size, object.active = color or 11, size or 8, true
+  object.speed, object.sort_z = options.speed or self.speed, options.z_order or object.z
   if index > self.object_count then self.object_count = index end
   return true
 end
@@ -160,7 +172,7 @@ end
 function methods.project(self, x, z, size)
   local scale = self.camera_height / math.max(2.1, z or 60)
   return self.width * 0.5 + ((x or 0) - self.camera_x) * scale,
-    self.horizon + scale * self.camera_height * 0.62, (size or 1) * scale
+    self.horizon + scale * self.camera_height * self.perspective, (size or 1) * scale
 end
 
 local function draw_starfield(self, g, colors)
@@ -168,7 +180,7 @@ local function draw_starfield(self, g, colors)
   for i = 1, self.star_count do
     local star = self.stars[i]
     local scale = self.camera_height / star.z
-    local x = center_x + (star.x - self.camera_x * 0.08) * scale * 2.2
+    local x = center_x + (star.x - self.camera_x * self.star_parallax) * scale * 2.2
     local y = self.horizon + star.y * scale
     if x >= 0 and x < self.width and y >= 0 and y < self.horizon then
       local c = colors.star[star.layer + 1]
@@ -187,10 +199,11 @@ local function draw_plane(self, g, colors)
     shared_mode7_shader:send("mode7Texture", self.mode7.image)
     shared_mode7_shader:send("planeSize", {self.width, height - horizon})
     shared_mode7_shader:send("cameraHeight", self.camera_height)
-    shared_mode7_shader:send("cameraX", self.camera_x)
-    shared_mode7_shader:send("cameraZ", self.camera_z)
     shared_mode7_shader:send("heading", self.mode7_angle)
     shared_mode7_shader:send("textureScale", self.mode7.scale)
+    shared_mode7_shader:send("perspectiveFactor", self.perspective)
+    shared_mode7_shader:send("cameraX", self.camera_x + self.mode7_time * self.mode7.scroll_speed_x)
+    shared_mode7_shader:send("cameraZ", self.camera_z + self.mode7_time * self.mode7.scroll_speed_y)
     g.setColor(1, 1, 1, 1)
     g.setShader(shared_mode7_shader)
     g.rectangle("fill", 0, horizon, self.width, height - horizon)
@@ -240,17 +253,17 @@ local function draw_objects(self, g)
     if object.active then
       count = count + 1
       local insert = count
-      while insert > 1 and self.sort_depth[insert - 1] < object.z do
+      while insert > 1 and self.sort_depth[insert - 1] < object.sort_z do
         self.sort_depth[insert], self.sort_index[insert] = self.sort_depth[insert - 1], self.sort_index[insert - 1]
         insert = insert - 1
       end
-      self.sort_depth[insert], self.sort_index[insert] = object.z, i
+      self.sort_depth[insert], self.sort_index[insert] = object.sort_z, i
     end
   end
   local center_x = self.width * 0.5
   for n = 1, count do
     local object = self.objects[self.sort_index[n]]
-    local x, y, projected_size = self:project_road(object.x, object.z, object.size)
+      local x, y, projected_size = self:project_road(object.x, object.z, object.size)
     local size = math.max(1, projected_size)
     if x + size >= 0 and x - size < self.width and y + size >= self.horizon and y - size < self.height then
       g.setColor(0.12, 0.08, 0.18, 1)

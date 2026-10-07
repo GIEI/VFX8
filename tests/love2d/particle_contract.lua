@@ -36,6 +36,23 @@ check(active == 0 and emitted == 1, "expired entries must be removed")
 check(system:emit("invalid", 0, 0) == 0, "unknown presets must be ignored")
 
 system:emit("sparks", 8, 9, {count = 1})
+local tuned = particles.new({capacity = 2, max_emit = 2, seed = 3})
+check(tuned:emit("explosion", 40, 40, {
+  count = 1, direction = {x = 1, y = 0}, direction_spread = 0,
+  min_speed = 12, max_speed = 12, radius = 5, emission_shape = "ring",
+  gravity = 0, drag = 0, wind = {x = 0, y = 0}, start_size = 6,
+  end_size = 2, colors = {2, 3, 4}
+}) == 1, "expanded particle options must still emit within limits")
+check(math.abs(math.sqrt((tuned.x[1] - 40)^2 + (tuned.y[1] - 40)^2) - 5) < 0.001,
+  "ring emission must place particles at the configured radius")
+check(math.abs(tuned.vx[1] - 12) < 0.001 and tuned.vy[1] == 0,
+  "explicit direction and speed range must set velocity")
+check(tuned.gravity[1] == 0 and tuned.drag[1] == 0 and tuned.wind_x[1] == 0 and tuned.size[1] == 6 and tuned.end_size[1] == 2,
+  "particle acceleration and size options must be stored")
+check(tuned.color_1[1] == 2 and tuned.color_2[1] == 3 and tuned.color_3[1] == 4,
+  "custom particle palette ramp must be stored")
+local ok_rotation = pcall(function() tuned:emit("dust", 0, 0, {rotation = 0.2}) end)
+check(not ok_rotation, "unsupported rotated square particles must fail explicitly")
 local r, g, b, a = unpack(draw_color)
 system:draw()
 check(draw_calls > 0, "draw must issue a primitive for a visible particle")
