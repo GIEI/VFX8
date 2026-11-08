@@ -2,7 +2,7 @@
 
 A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goal is to make effects easy to integrate into games, with predictable costs on fantasy consoles and richer quality options where resources allow.
 
-> **Release target:** 1.1.0. All nine effect modules have engine-specific implementations for all four engines. Rain and snow are newly included; their runtime/API tests pass, while native visual review and performance measurements are still pending on some targets. See the [release notes](RELEASE_NOTES.md) and [verification checklist](docs/native-visual-checklist.md) for the exact coverage.
+> **Version:** 1.1.0. All nine effect modules have engine-specific implementations for all four engines. Rain and snow are newly included; their runtime/API tests pass, while native visual review and performance measurements are still pending on some targets. See the [release notes](RELEASE_NOTES.md) and [verification checklist](docs/native-visual-checklist.md) for the exact coverage.
 
 **License:** MIT. See [LICENSE](LICENSE).
 
