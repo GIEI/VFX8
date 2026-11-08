@@ -30,6 +30,6 @@ These gaps are disclosed rather than treated as completed evidence. See [`native
 
 - [x] Version metadata and the source archive target are set to `1.1.0`.
 - [x] The source package includes source, docs, examples, tests, benchmark reports, tools, release notes, changelog, and MIT license; generated builds and local runtime data are excluded.
-- [ ] Commit the verified release contents, tag `v1.1.0`, and publish the GitHub release with the source archive attached.
+- [x] Commit the verified release contents, tag `v1.1.0`, and publish the GitHub release. GitHub provides source ZIP and tar archives from the tag.
 
-The previous `v0.1.0-rc.1` release remains available in the repository's [GitHub releases](https://github.com/GIEI/VFX8/releases).
+The custom source ZIP was generated locally but was not uploaded as a separate release asset. The published source archives are available from the [VFX8 1.1.0 release](https://github.com/GIEI/VFX8/releases/tag/v1.1.0). The previous `v0.1.0-rc.1` release remains available in the repository's [GitHub releases](https://github.com/GIEI/VFX8/releases).
