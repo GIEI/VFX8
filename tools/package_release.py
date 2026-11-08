@@ -47,7 +47,7 @@ def write_archive(root: Path, output: Path, version: str) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", default="0.1.0", help="Archive version (default: 0.1.0).")
+    parser.add_argument("--version", default="1.1.0", help="Archive version (default: 1.1.0).")
     parser.add_argument("--output", type=Path, help="Output ZIP path (default: .tmp/vfx8-VERSION-source.zip).")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", args.version):

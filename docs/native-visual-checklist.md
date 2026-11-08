@@ -1,79 +1,44 @@
 # Native Visual Verification Checklist
 
-This checklist covers interactive appearance, controls, draw order, and state restoration. Headless tests verify API calls and rendering paths, but they do not replace visual review in each native engine.
+Automated contracts confirm APIs and drawing paths; they do not replace visual review in each engine. The user has confirmed visual checks for the original seven modules on all four targets. Rain and snow were added later and are tracked separately below.
 
-## Recorded automated checks
+## Verification status
 
-| Engine | Runtime observed | Automated coverage | Visual review |
+| Engine | Runtime known | Automated checks | Visual review |
 | --- | --- | --- | --- |
-| PICO-8 | Version unavailable from the runtime bridge | Core and advanced profile contracts pass at low, medium, and high. The user confirms visual checks and performance measurements are complete. | User confirms visual checks across the showcase/effects and profiles are complete. Exact measurement values and captures were not supplied in this task. |
-| Picotron | 0.3.0d, build 260527-061316; user-tested native demo | User confirms all seven effects work in the native demo. Automated smoke also covers update/draw variants at low/medium/high and both pseudo-3D texture and fallback paths. | User confirms native visual checks are complete. Screenshots and profile-by-profile notes are not stored. |
-| LÖVE | 11.5.0 | Portable source contracts and the native API contract harness pass. The user confirms the integration game works. | User confirms native visual checks are complete. Screenshots and profile-by-profile notes are not stored; the local `love2d-mcp` endpoint is offline. |
-| TIC-80 | 1.2.0, user-confirmed | Portable source and include-build checks pass. The user confirms visual checks and performance measurements are complete. | User confirms visual checks across the showcase/effects and profiles are complete. Exact measurement values and captures were not supplied in this task. |
+| PICO-8 | Version not exposed by the bridge | Core, advanced, and weather profile contracts pass. Weather demo and integration carts boot; the weather contract checks oblique movement. | Original seven modules were user-confirmed. Rain/snow still need a visual pass. |
+| Picotron | 0.3.0d, build 260527-061316 | The nine-module isolated smoke harness covers rain angle and snow surfaces at all three profiles; a native run of this harness remains outstanding. | Original seven modules were user-confirmed. Rain/snow still need a visual pass. |
+| LÖVE | 11.5.0 | Runtime API contracts pass for all nine modules, including rain and snow. Demo staging succeeds. | Original seven modules were user-confirmed. Rain/snow still need a visual pass; no weather screenshots are recorded. |
+| TIC-80 | 1.2.0 | Demo and integration include builds pass. The current environment does not launch native TIC-80. | Original seven modules were user-confirmed. Rain/snow still need native visual review. |
 
-## Integration game confirmation
+## Previously confirmed integration behavior
 
-| Date | Engines | User-confirmed result | Evidence |
-| --- | --- | --- | --- |
-| 2026-10-03 | PICO-8, Picotron, LÖVE, TIC-80 | The minimal game with its own input, update, and draw callbacks runs correctly on all four engines. | User confirmation in the project task; no screenshots were attached. |
+On 2026-10-03, the user confirmed the minimal game, with its own input, update, and draw callbacks, works on PICO-8, Picotron, LÖVE, and TIC-80. The original seven effects were visually checked on all four engines. Run-by-run captures and per-profile notes were not supplied.
 
-This confirms the public integration path. The user has confirmed native visual checks are complete on all four engines. Representative captures and run-by-run details remain useful release evidence.
+The user also confirmed completing visual checks and performance measurements for the original effects in PICO-8 and TIC-80, plus visual checks in Picotron and LÖVE. Those confirmations do not cover the later rain and snow modules.
 
-## User-confirmed PICO-8 and TIC-80 checks
+## Manual review checklist
 
-On 2026-10-03, the user confirmed completing visual checks and performance measurements in PICO-8 and TIC-80. This closes the manual run items for those two engines. The confirmation did not include raw timings, profile-by-profile values, runtime details beyond the already recorded TIC-80 version, or capture paths; those remain unrecorded evidence rather than pending user testing.
+### Original seven modules
 
-## User-confirmed Picotron and LÖVE visual checks
+- [x] PICO-8: core effects, pseudo-3D, flames, and electricity; controls, profile changes, and scene coverage. User-confirmed.
+- [x] Picotron: all original effect variants at low/medium/high; clipping and graphics-state restoration. User-confirmed.
+- [x] LÖVE: all original effect variants at low/medium/high; shockwave, Mode 7, resizing, and graphics-state restoration. User-confirmed.
+- [x] TIC-80: all original effect variants at low/medium/high; clipping, controls, and state restoration. User-confirmed.
 
-On 2026-10-03, the user confirmed completing visual checks in Picotron and LÖVE. This closes the manual visual run items for those engines. Screenshots and per-profile notes were not included in the confirmation and remain unrecorded evidence.
+### Rain and snow — pending visual review
 
-## Manual run checklist
+- [ ] PICO-8: cycle vertical and oblique rain at light/heavy/storm density; confirm the slant direction, screen-edge wrapping, snow sway, and snow deposits on registered surfaces.
+- [ ] Picotron: repeat the same rain/snow variants and run `tests/picotron/run-smoke.ps1` to exercise all quality profiles.
+- [ ] LÖVE: cycle rain angles and density, resize the window, and confirm flakes/deposits restore graphics color state.
+- [ ] TIC-80: import the expanded demo and integration source; cycle rain and snow variants and inspect bounds and draw order.
 
-### PICO-8
+## Capture template
 
-- [x] Open `examples/pico8/demo.p8`. At each quality (`low`, `medium`, `high`), cycle particles, screen effects, pixel warp, and palette effects. Trigger each effect and try its available variants. For particles, cycle the preset and emission-shape combinations. User confirms the visual/profile checks and measurements are complete.
-- [x] Open `examples/pico8/pseudo3d_demo_standalone.p8`. The user confirms the self-contained cart works. Separate visual review of every profile and variant remains unrecorded.
-- [x] Open `examples/pico8/flames_electricity_demo.p8`. At each quality, inspect campfire and flamethrower variants, then branched and clean lightning. Confirm repeated triggers do not leave stale pixels or stop updates. User confirms the visual/profile checks are complete.
-- [x] Open `examples/pico8/electricity_demo.p8` and check the standalone branched/clean bolt toggle and repeated strikes. User confirms the visual checks are complete.
-- [x] Confirm arrow and O/X controls do not behave as if held continuously, the active scene field stays filled, and the game returns to a stable frame after each effect. User confirms the visual checks are complete.
+For a reproducible result, record engine/version, cart or staged directory, profile, effect/variant, controls, draw-order and state-restoration result, and screenshot path.
 
-### Picotron
-
-- [x] Launch the interactive showcase from [`examples/README.md`](../examples/README.md), then test low, medium, and high for every effect and each displayed variant. User confirms the visual checks are complete.
-- [x] Check the full 240×136 composition, clipping at the screen edges, and the update/draw order when particles or lightning overlap the scene. User confirms the visual checks are complete.
-- [x] Check that camera, clipping, palette, and drawing state return to normal after switching effects or profiles. User confirms the visual checks are complete.
-
-### LÖVE
-
-- [x] Run the LÖVE 11.5.0 demo in the regular game window. User confirms the visual checks are complete; the local MCP bridge is offline.
-- [x] At every quality, inspect all seven effects and their variants. Check shader shockwave and its fallback, Mode 7 texture edges, particle bounds, and window resize behavior. User confirms the visual checks are complete.
-- [x] Trigger overlapping effects and confirm canvases, shader state, color, blend mode, and scissor state are restored after drawing. User confirms the visual checks are complete.
-
-### TIC-80
-
-- [x] Build the current showcase with `python tools/tic80_include.py examples/tic80/demo.lua -o examples/tic80/build/demo.lua`, import that generated file into TIC-80, and run it. User confirms the visual checks and measurements are complete.
-- [x] At each quality, cycle through all seven effects and variants, checking the 240×136 view, clipping, controls, and frame stability. User confirms the visual checks are complete.
-- [x] Check scroll/camera, palette, and clipping restoration after each effect and after switching modules. User confirms the visual checks are complete.
-
-## Shared effect and state checks
-
-- [x] Particles: explosion, sparks, trail, smoke, dust; point, line, and area emission. User confirms all engine visual checks are complete.
-- [x] Screen effects: trauma shake, directional impulses in each supported direction, flash, and shockwave/ring. User confirms all engine visual checks are complete.
-- [x] Pixel deformation: wave-only and line rotation, squash/stretch, and every supported dissolve/dither mode. User confirms all engine visual checks are complete.
-- [x] Palette: color cycle, night, sepia, monochrome, glow/pulse, custom mapping where exposed, and negative/inversion flash. User confirms all engine visual checks are complete.
-- [x] Pseudo-3D: textured and fallback ground, curved road, starfield, camera variation, and projected objects. User confirms all engine visual checks are complete.
-- [x] Flames: campfire and directional flamethrower. User confirms all engine visual checks are complete.
-- [x] Electricity: branched and clean bolts, varied endpoints, and repeated strikes. User confirms all engine visual checks are complete.
-- [x] In each engine, exercise effect combinations where the demo allows it and verify that one effect does not leave camera, palette, clipping, color, blend, shader, or canvas state behind. User confirms all engine visual checks are complete.
-
-## Record results
-
-For each engine/profile run, record the runtime version, cartridge or staged folder, effects and variants exercised, control result, visual result, state-restoration result, and screenshot or capture path. Record expected engine differences separately; for example, fantasy-console shockwaves are ring cues rather than framebuffer ripples.
-
-| Engine / version | Quality | Effects and variants | Controls / draw order / state | Result and capture path |
+| Engine / version | Quality | Effect and variant | Controls / state result | Capture path |
 | --- | --- | --- | --- | --- |
 |  | low |  |  |  |
 |  | medium |  |  |  |
 |  | high |  |  |  |
-
-The table above is for detailed reproducibility. Visual checks are user-confirmed complete for all four engines, but individual run data and capture paths have not yet been entered.

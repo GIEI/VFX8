@@ -44,7 +44,7 @@ local function configure_entry()
  end
 end
 local function handoff()
- load("main.p8","BACK TO VFX8 CORE",tostr(player.x)..","..tostr(player.y))
+ load("weather.p8","NEXT: RAIN AND SNOW",tostr(player.x)..","..tostr(player.y))
 end
 local function trigger_effect()
  local mode=entry[3]

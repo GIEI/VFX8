@@ -137,3 +137,30 @@ fx[7] = {
   stats = function() if electricity then return electricity:stats() end return 0, 0, 0 end,
   label = function() return electric_variant == 1 and "branched arc" or "clean bolt" end
 }
+
+local rain, rain_variant = nil, 1
+local rain_angles = {0, 0, 0, 18, 18, 18}
+local rain_levels = {"light", "heavy", "storm", "light", "heavy", "storm"}
+fx[8] = {
+  on_enter = function(q) rain = vfx8_rain.new({quality = q, width = 240, height = 110, angle = rain_angles[rain_variant], intensity = rain_levels[rain_variant]}) end,
+  on_exit = function() if rain then rain:clear() end end,
+  trigger = function() if rain then rain:set_intensity(rain_levels[rain_variant]); rain:set_angle(rain_angles[rain_variant]) end end,
+  update = function(dt) if rain then rain:update(dt) end end,
+  draw = function() if rain then rain:draw() end end,
+  cycle_variant = function() rain_variant = rain_variant % 6 + 1; if rain then rain:set_intensity(rain_levels[rain_variant]); rain:set_angle(rain_angles[rain_variant]) end end,
+  stats = function() if rain then return rain:stats() end return 0, 0, 0 end,
+  label = function() return rain_levels[rain_variant] .. (rain_variant > 3 and " / oblique" or " / vertical") end
+}
+
+local snow, snow_variant = nil, 1
+local snow_levels = {"light", "heavy", "storm"}
+fx[9] = {
+  on_enter = function(q) snow = vfx8_snow.new({quality = q, width = 240, height = 110, intensity = snow_levels[snow_variant], seed = 17}); snow:add_surface(0, 101, 240) end,
+  on_exit = function() if snow then snow:clear() end end,
+  trigger = function() if snow then snow:set_intensity(snow_levels[snow_variant]) end end,
+  update = function(dt) if snow then snow:update(dt) end end,
+  draw = function() if snow then snow:draw() end end,
+  cycle_variant = function() snow_variant = snow_variant % 3 + 1; if snow then snow:set_intensity(snow_levels[snow_variant]) end end,
+  stats = function() if snow then return snow:stats() end return 0, 0, 0 end,
+  label = function() return snow_levels[snow_variant] .. " snowfall" end
+}

@@ -33,7 +33,9 @@ def main() -> int:
     pseudo3d_module = ROOT / "src" / "love2d" / "pseudo3d.lua"
     flames_module = ROOT / "src" / "love2d" / "flames.lua"
     electricity_module = ROOT / "src" / "love2d" / "electricity.lua"
-    for required in (module, screen_module, deform_module, palette_module, pseudo3d_module, flames_module, electricity_module):
+    rain_module = ROOT / "src" / "love2d" / "rain.lua"
+    snow_module = ROOT / "src" / "love2d" / "snow.lua"
+    for required in (module, screen_module, deform_module, palette_module, pseudo3d_module, flames_module, electricity_module, rain_module, snow_module):
         if not required.is_file():
             print(f"Missing effect module: {required}", file=sys.stderr)
             return 1
@@ -60,8 +62,10 @@ def main() -> int:
     shutil.copy2(pseudo3d_module, package / "pseudo3d.lua")
     shutil.copy2(flames_module, package / "flames.lua")
     shutil.copy2(electricity_module, package / "electricity.lua")
+    shutil.copy2(rain_module, package / "rain.lua")
+    shutil.copy2(snow_module, package / "snow.lua")
 
-    required_staged = (BUILD / "main.lua", BUILD / "demo_extension.lua", package / "particles.lua", package / "screen_fx.lua", package / "pixel_deform.lua", package / "palette_fx.lua", package / "pseudo3d.lua", package / "flames.lua", package / "electricity.lua")
+    required_staged = (BUILD / "main.lua", BUILD / "demo_extension.lua", package / "particles.lua", package / "screen_fx.lua", package / "pixel_deform.lua", package / "palette_fx.lua", package / "pseudo3d.lua", package / "flames.lua", package / "electricity.lua", package / "rain.lua", package / "snow.lua")
     missing = [path for path in required_staged if not path.is_file()]
     if missing:
         print("Staging failed; required game files are missing:", file=sys.stderr)

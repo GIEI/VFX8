@@ -6,6 +6,8 @@ local palette_fx = require("vfx8.palette_fx")
 local pseudo3d = require("vfx8.pseudo3d")
 local flames = require("vfx8.flames")
 local electricity = require("vfx8.electricity")
+local rain = require("vfx8.rain")
+local snow = require("vfx8.snow")
 
 local width, height, scale = 480, 272, 2
 local play_top, play_bottom = 36, height - 24
@@ -50,7 +52,16 @@ local catalog = {
   {6, "FLAMETHROWER JET", "jet"},
   {6, "CAMPFIRE PLUME", "campfire"},
   {7, "BRANCHED LIGHTNING", "branched"},
-  {7, "CLEAN LIGHTNING ARC", "clean"}
+  {7, "CLEAN LIGHTNING ARC", "clean"},
+  {8, "RAIN / VERTICAL LIGHT", "light", 0},
+  {8, "RAIN / VERTICAL HEAVY", "heavy", 0},
+  {8, "RAIN / VERTICAL STORM", "storm", 0},
+  {8, "RAIN / OBLIQUE LIGHT", "light", 16},
+  {8, "RAIN / OBLIQUE HEAVY", "heavy", 16},
+  {8, "RAIN / OBLIQUE STORM", "storm", 16},
+  {9, "SNOW / LIGHT", "light"},
+  {9, "SNOW / HEAVY", "heavy"},
+  {9, "SNOW / BLIZZARD", "storm"}
 }
 local palette = {
   {0.02, 0.03, 0.08}, {0.08, 0.13, 0.23}, {0.49, 0.15, 0.32}, {0.06, 0.48, 0.34},
@@ -73,6 +84,7 @@ local player = {x = width * 0.5, y = height * 0.54, speed = 144}
 local clock = 0
 local dissolve_time = nil
 local campfire_x, campfire_y
+local snow_surface
 local mode7_texture
 local wave_x_samples, wave_y_samples = {}, {}
 
@@ -87,7 +99,13 @@ local function create_effect(group)
   elseif group == 5 then
     return pseudo3d.new({quality = "high", width = width, height = play_bottom, horizon = 84, camera_height = 60, road_width = 200})
   elseif group == 6 then return flames.new({quality = "medium"})
-  else return electricity.new({quality = "medium"}) end
+  elseif group == 7 then return electricity.new({quality = "medium"})
+  elseif group == 8 then return rain.new({quality = "medium", width = width, height = play_bottom})
+  else
+    local instance = snow.new({quality = "medium", width = width, height = play_bottom})
+    snow_surface = instance:add_surface(0, play_top, width)
+    return instance
+  end
 end
 
 local function configure_entry()
@@ -141,10 +159,15 @@ local function trigger_effect()
   elseif entry[1] == 6 then
     if mode == "jet" then effect:emit_jet(player.x, player.y, 1, -0.16)
     else effect:emit_campfire(player.x, player.y + 12, {count = 16, radius = 7}) end
-  else
+  elseif entry[1] == 7 then
     local x2 = math.min(width - 20, player.x + 112)
     local y2 = math.max(play_top + 12, player.y - 80)
     effect:strike(player.x, player.y, x2, y2, {branches = mode == "branched" and 3 or 0, jaggedness = mode == "clean" and 3 or 12})
+  elseif entry[1] == 8 then
+    effect:set_intensity(mode)
+    effect:set_angle(entry[4])
+  elseif entry[1] == 9 then
+    effect:set_intensity(mode)
   end
 end
 
@@ -158,6 +181,7 @@ local function update_game(dt)
     campfire_x, campfire_y = player.x, player.y + 12
     effect:emit_campfire(campfire_x, campfire_y, {count = 5, radius = 5})
   end
+  if entry[1] == 9 and snow_surface then effect:set_surface(snow_surface, player.x - 8, player.y - 8, 16) end
   effect:update(dt)
   if dissolve_time then
     dissolve_time = dissolve_time + dt
@@ -246,7 +270,7 @@ local function draw_world()
     love.graphics.rectangle("fill", math.floor(player.x - w / 2), math.floor(player.y - h / 2), w, h)
   end
 
-  if entry[1] == 1 or entry[1] == 6 or entry[1] == 7 then effect:draw() end
+  if entry[1] == 1 or entry[1] == 6 or entry[1] == 7 or entry[1] == 8 or entry[1] == 9 then effect:draw() end
 end
 
 local function make_mode7_texture()

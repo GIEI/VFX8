@@ -2,6 +2,22 @@
 
 All notable changes to VFX8 are documented here. This project follows Semantic Versioning.
 
+## [1.1.0] - 2026-11-08
+
+### Added
+
+- Bounded rain and snow effects for PICO-8, Picotron, LÖVE, and TIC-80, with adjustable intensity and weather-specific controls.
+- Snow collection on registered horizontal surfaces with short-lived deposits, plus standalone demos and external-game integration examples.
+- English API guides and portable/native runtime contracts for both weather effects.
+- Full integration-game catalogs and demo selectors now expose all nine effect modules on every target, including separate PICO-8 weather cartridges to stay within its token budget.
+- Corrected the PICO-8 rain angle convention so oblique drops move in the intended direction; added a runtime motion assertion and removed the oversized gray backing from the weather integration player.
+
+### Verification
+
+- All 50 portable tests pass, including LÖVE runtime contracts for all nine modules and source/build checks for both TIC-80 demos.
+- PICO-8 core, advanced, and weather native profile contracts pass; weather showcase and integration cartridges boot without errors. TIC-80 demo and integration include builds and LÖVE demo staging pass.
+- Rain and snow still need native visual review and performance measurements on all engines. Picotron and TIC-80 native weather runs were unavailable in the release environment; existing benchmark reports cover the original seven modules.
+
 ## [0.1.0-rc.1] - 2026-10-07
 
 ### Added

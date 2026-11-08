@@ -1,35 +1,35 @@
-# Public Release Checklist
+# VFX8 1.1.0 Release Checklist
 
-This checklist summarizes the remaining work required for a dependable first public release. The source contains all seven effect modules for PICO-8, Picotron, LÖVE, and TIC-80; implementation coverage alone is not a release sign-off.
+This checklist records what is included in release 1.1.0 and separates verified behavior from work that still needs additional runtime access or measurements.
 
-## Evidence gaps carried into the first pre-release
+## Included and tested
 
-- [x] **Fit the PICO-8 showcase within the 8,192-token limit.** The showcase is split into three native-boot-tested carts. Exact code token counts and headroom are recorded in [`benchmarks/results/pico8-showcase-token-budget.md`](../benchmarks/results/pico8-showcase-token-budget.md).
-- [x] **Finish the initial native visual checks across supported engines and profiles.** The user confirms visual checks are complete on PICO-8, Picotron, LÖVE, and TIC-80. The effect pages now include representative PICO-8 captures; complete retesting of the newly added optional parameters remains open and is disclosed in the release candidate notes.
-- [x] **Add a repeatable regression path for native runtimes and portable build gaps.** [`tests/run-regression.ps1`](../tests/run-regression.ps1) runs the Python suite, TIC-80 include build, LÖVE staging, and supported native checks; [`tests/README.md`](../tests/README.md) documents skips and runtime requirements. The latest run passes 44 portable tests (one LÖVE filesystem-dependent test skipped), PICO-8 core/advanced contracts, and Picotron smoke. TIC-80 native automation still requires an installed runtime and is reported as skipped when none is available.
-- [ ] **Complete performance and resource measurements.** Picotron and LÖVE have five-run reports for all seven effects, three profiles, and baseline/typical/saturated cases; LÖVE samples saturated cases for 600 frames and records update/draw time, heap deltas, texture memory, and shader availability. The user confirms PICO-8 and TIC-80 measurements are complete, but detailed values have not been added to the repository. Picotron full program memory, LÖVE additional resolutions/GPU time, PICO-8 standalone module token costs, and release-machine confirmation remain open. See [`benchmarks/performance-checklist.md`](../benchmarks/performance-checklist.md).
-- [x] **Verify the public integration contract end to end.** The user confirmed on 2026-10-03 that the minimal integration game works on PICO-8, Picotron, LÖVE, and TIC-80 with its own input, update, and draw callbacks. The user also confirms visual checks are complete on all four engines; representative captures remain optional launch evidence.
-- [ ] **Resolve issues found by those checks and update the effect pages.** Record tested engine versions, supported behavior, quality limits, measured costs, and known visual differences. Do not describe an effect as measured or visually verified until the result is recorded.
+- [x] Nine engine-specific modules, with a separate English guide for every effect.
+- [x] Demo adapters for PICO-8, Picotron, LÖVE, and TIC-80; integration-game examples retain their own callbacks and input.
+- [x] Rain and snow modules, demos, and external-project integration examples for all four engines.
+- [x] PICO-8 oblique-rain direction fix and a native contract that checks horizontal and vertical movement.
+- [x] Portable regression suite: 50 tests pass.
+- [x] LÖVE 11.5.0 native API/runtime contracts pass for all nine modules, including rain and snow.
+- [x] PICO-8 core, advanced, and weather profile contracts pass through the native bridge; weather demo and integration carts boot.
+- [x] TIC-80 demo and integration include builds pass; LÖVE demo staging passes.
+- [x] MIT license, reproducible source packager, compatibility matrix, release notes, and changelog are included.
 
-## Publication preparation
+## Known verification and measurement gaps
 
-- [x] **Prepare release metadata:** `CHANGELOG.md` and `RELEASE_NOTES.md` describe the `0.1.0-rc.1` candidate and its known limitations.
-- [x] **Track the MIT license in the release commit.** `LICENSE` is already tracked in the repository.
-- [x] **Add a reproducible CI gate** for the portable Python contracts, include/build steps, and demo staging. Native runtime requirements and checks that remain manual are documented.
-- [x] **Prepare a clean download package:** `python tools/package_release.py --version 0.1.0-rc.1` creates a source archive containing the library, docs and screenshots, examples, tests, benchmarks, tools, changelog, release notes, and MIT license while excluding generated build/runtime data.
-- [x] **Review the repository diff and leave a clean, tested release commit.** The release metadata is limited to the `0.1.0-rc.1` notes, changelog, checklist, and README; the release candidate will be tagged from the clean tested `main` checkout.
-- [x] **Confirm the GitHub repository's public visibility and publish the tagged release.** `GIEI/VFX8` is public. The `v0.1.0-rc.1` pre-release is published with the source archive, compatibility matrix, supported engine versions, and demo links: https://github.com/GIEI/VFX8/releases/tag/v0.1.0-rc.1.
+- [ ] Visually review rain and snow in native demos on PICO-8, Picotron, LÖVE, and TIC-80, including the oblique direction and snow settling.
+- [ ] Run the expanded Picotron native smoke harness for rain and snow at low, medium, and high quality. The smoke test is available at [`tests/picotron/run-smoke.ps1`](../tests/picotron/run-smoke.ps1).
+- [ ] Run the rain and snow demos in native TIC-80. The current automated check expands the include files but does not launch TIC-80.
+- [ ] Record repeatable weather performance measurements for each engine and profile. Existing Picotron and LÖVE reports cover only the original seven modules.
+- [ ] Add raw user-measured PICO-8 and TIC-80 timing/resource values. Prior user confirmations cover the original seven effects but did not include data for this report.
+- [ ] Measure PICO-8 per-module token costs, Picotron total program memory, and LÖVE shockwave costs at additional resolutions where supported.
+- [ ] Record the tested PICO-8 version, complete per-profile visual evidence, and release-machine details.
 
-## Already in place
+These gaps are disclosed rather than treated as completed evidence. See [`native-visual-checklist.md`](native-visual-checklist.md) and [`../benchmarks/performance-checklist.md`](../benchmarks/performance-checklist.md) for the corresponding run procedures.
 
-- [x] Seven effect modules have engine-specific implementations for all four targets.
-- [x] A dedicated English effect page, integration guidance, and a demo adapter exist for each effect/engine family.
-- [x] The portable Python suite passes 44 tests; one LÖVE filesystem-dependent test skips. The latest full regression run passed PICO-8 core/advanced contracts and Picotron native smoke. TIC-80 native launch was skipped because no executable is installed.
-- [x] Picotron headless smoke exercises all seven modules, covered variants, all quality profiles, and textured/fallback pseudo-3D paths in an isolated home; the user confirms interactive visual checks are complete.
-- [x] The user confirms the PICO-8, Picotron, LÖVE, and TIC-80 visual checks are complete; TIC-80 1.2.0 showcase functionality was previously confirmed.
-- [x] The repository already contains an MIT license file and a configured GitHub `origin` remote; both still need to be included or checked as listed above.
+## Publication
 
-## Optional launch polish
+- [x] Version metadata and the source archive target are set to `1.1.0`.
+- [x] The source package includes source, docs, examples, tests, benchmark reports, tools, release notes, changelog, and MIT license; generated builds and local runtime data are excluded.
+- [ ] Commit the verified release contents, tag `v1.1.0`, and publish the GitHub release with the source archive attached.
 
-- [x] Add representative screenshots to all seven effect pages. The captures are generated by PICO-8 from each native module; the release notes link to the effect pages.
-- [ ] Provide ready-to-open sample carts or a staging script for each fantasy console, especially a Picotron package that copies the `vfx8/` modules automatically.
+The previous `v0.1.0-rc.1` release remains available in the repository's [GitHub releases](https://github.com/GIEI/VFX8/releases).

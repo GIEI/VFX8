@@ -9,10 +9,12 @@ include("/desktop/vfx8-picotron-runtime/vfx8/palette_fx.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/pseudo3d.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/flames.lua")
 include("/desktop/vfx8-picotron-runtime/vfx8/electricity.lua")
+include("/desktop/vfx8-picotron-runtime/vfx8/rain.lua")
+include("/desktop/vfx8-picotron-runtime/vfx8/snow.lua")
 include("/desktop/vfx8-picotron-runtime/demo_extension.lua")
 
 assert(type(fx) == "table", "demo extension did not expose its effect adapter")
-for index = 1, 7 do
+for index = 1, 9 do
   assert(type(fx[index]) == "table", "demo extension is missing effect adapter " .. index)
 end
 
@@ -133,6 +135,25 @@ for quality in all(qualities) do
   electricity:update(dt)
   electricity:draw()
   electricity:clear()
+
+  local rain = vfx8_rain.new({quality = quality, width = 240, height = 110, angle = 18, intensity = "storm", seed = 19})
+  assert(rain:stats() > 0, "storm rain should fill its bounded pool")
+  assert(rain:set_angle(90) == 35, "rain angle should clamp to the supported slant")
+  rain:update(dt)
+  rain:draw()
+  rain:clear()
+  assert(rain:stats() == 0, "rain clear should release active drops")
+
+  local snow = vfx8_snow.new({quality = quality, width = 240, height = 110, speed = 100, intensity = "storm", settle_min = 1, settle_max = 1, seed = 23})
+  local ledge = snow:add_surface(0, 6, 240)
+  assert(ledge and snow:set_surface(ledge, 0, 6, 240), "snow should register object catch surfaces")
+  for i = 1, snow.count do snow.x[i], snow.y[i] = 20 + i, 0 end
+  snow:update(0.1)
+  assert(snow:stats() > 0, "snow should deposit on crossed horizontal surfaces")
+  snow:draw()
+  snow:clear_surfaces()
+  snow:clear()
+  assert(snow:stats() == 0, "snow clear should remove flakes and deposits")
   assert(electricity:strike(40, 40, 200, 80, {branches = 0, jaggedness = 3}) > 0)
   electricity:update(dt)
   electricity:draw()
@@ -141,6 +162,6 @@ for quality in all(qualities) do
   printh("VFX8 Picotron " .. quality .. " profile smoke passed")
 end
 
-store("/appdata/vfx8_picotron_runtime_smoke.pod", {passed = true, profiles = 3, version = 2})
+store("/appdata/vfx8_picotron_runtime_smoke.pod", {passed = true, profiles = 3, effects = 9, version = 3})
 printh("VFX8 Picotron runtime smoke passed: all effects, variants, and profiles")
 exit()

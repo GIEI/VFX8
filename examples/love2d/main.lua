@@ -1,7 +1,8 @@
 -- VFX8 demo harness. Run the staged build folder with LÖVE via stage_demo.py.
 local fx = require("demo_extension")
 
-local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity"}
+local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity", "rain", "snow"}
+local module_count = #names
 local qualities = {"low", "medium", "high"}
 local selected, quality = 1, 1
 local fx_enabled, active = true, nil
@@ -71,10 +72,10 @@ function love.keypressed(key)
   if key == "escape" then
     love.event.quit()
   elseif key == "left" then
-    selected = (selected + 5) % 7 + 1
+    selected = (selected + module_count - 2) % module_count + 1
     refresh_fx()
   elseif key == "right" then
-    selected = selected % 7 + 1
+    selected = selected % module_count + 1
     refresh_fx()
   elseif key == "up" then
     quality = quality % 3 + 1

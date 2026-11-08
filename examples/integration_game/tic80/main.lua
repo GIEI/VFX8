@@ -6,6 +6,8 @@
 --#include "vfx8/pseudo3d.lua"
 --#include "vfx8/flames.lua"
 --#include "vfx8/electricity.lua"
+--#include "vfx8/rain.lua"
+--#include "vfx8/snow.lua"
 
 local width,height,top,bottom=240,136,22,124
 local catalog={
@@ -19,9 +21,12 @@ local catalog={
  {4,"COLOR CYCLING","cycle"},{4,"NIGHT FILTER","night"},{4,"SEPIA FILTER","sepia"},{4,"MONOCHROME FILTER","mono"},{4,"GLOW PULSE","glow"},{4,"DAMAGE FLASH","damage"},{4,"NEGATIVE FLASH","negative"},{4,"CUSTOM DUSK MAP","dusk"},
  {5,"MODE 7 TEXTURED PLANE","mode7"},{5,"PARALLAX STARFIELD","stars"},{5,"DEPTH-PROJECTED OBJECT","object"},
  {6,"FLAMETHROWER JET","jet"},{6,"CAMPFIRE PLUME","campfire"},
- {7,"BRANCHED LIGHTNING","branched"},{7,"CLEAN LIGHTNING ARC","clean"}
+ {7,"BRANCHED LIGHTNING","branched"},{7,"CLEAN LIGHTNING ARC","clean"},
+ {8,"RAIN / VERTICAL LIGHT","light",0},{8,"RAIN / VERTICAL HEAVY","heavy",0},{8,"RAIN / VERTICAL STORM","storm",0},
+ {8,"RAIN / OBLIQUE LIGHT","light",16},{8,"RAIN / OBLIQUE HEAVY","heavy",16},{8,"RAIN / OBLIQUE STORM","storm",16},
+ {9,"SNOW / LIGHT","light"},{9,"SNOW / HEAVY","heavy"},{9,"SNOW / BLIZZARD","storm"}
 }
-local group_names={"PARTICLES","SCREEN FX","PIXEL WARP","PALETTE FX","PSEUDO-3D","FLAMES","ELECTRICITY"}
+local group_names={"PARTICLES","SCREEN FX","PIXEL WARP","PALETTE FX","PSEUDO-3D","FLAMES","ELECTRICITY","RAIN","SNOW"}
 local road_colors={sky=1,ground=3,road_a=1,road_b=13,edge=11,stars={12,14,15}}
 local rgb_palette={{0,0,0},{0.114,0.169,0.325},{0.494,0.145,0.325},{0,0.529,0.318},{0.671,0.322,0.212},{0.373,0.341,0.31},{0.761,0.765,0.78},{1,0.945,0.91},{1,0.004,0.278},{1,0.639,0},{1,0.925,0.153},{0,0.894,0.165},{0.161,0.678,1},{0.514,0.463,0.616},{1,0.467,0.659},{1,0.8,0.667}}
 local dusk_map={0,1,1,2,3,4,5,6,2,3,5,4,1,2,3,6}
@@ -29,6 +34,7 @@ local selected,selected_group=1,0
 local entry,effect
 local player={x=120,y=74,speed=72}
 local clock,dissolve_time=0,nil
+local snow_surface
 
 local function prepare_mode7_texture()
  for y=0,63 do for x=0,63 do
@@ -47,7 +53,9 @@ local function create_effect(group)
   return fx
  elseif group==5 then return vfx8_pseudo3d.new({quality="low",width=width,height=bottom,horizon=34})
  elseif group==6 then return vfx8_flames.new({quality="low"})
- else return vfx8_electricity.new({quality="low"}) end
+ elseif group==7 then return vfx8_electricity.new({quality="low"})
+ elseif group==8 then return vfx8_rain.new({quality="low",width=width,height=bottom})
+ else local instance=vfx8_snow.new({quality="low",width=width,height=bottom}); snow_surface=instance:add_surface(0,top,width); return instance end
 end
 local function configure_entry()
  entry=catalog[selected]
@@ -95,7 +103,9 @@ local function trigger_effect()
  elseif entry[1]==6 then
   if mode=="jet" then effect:emit_jet(player.x,player.y,1,-0.12)
   else effect:emit_campfire(player.x,player.y+8,{count=8,radius=5}) end
- else effect:strike(player.x,player.y,math.min(width-12,player.x+52),math.max(top+8,player.y-40),{branches=mode=="branched" and 2 or 0,jaggedness=mode=="clean" and 2 or 8}) end
+ elseif entry[1]==7 then effect:strike(player.x,player.y,math.min(width-12,player.x+52),math.max(top+8,player.y-40),{branches=mode=="branched" and 2 or 0,jaggedness=mode=="clean" and 2 or 8})
+ elseif entry[1]==8 then effect:set_intensity(mode); effect:set_angle(entry[4])
+ elseif entry[1]==9 then effect:set_intensity(mode) end
 end
 local function update_game()
  local dx=(btn(3) and 1 or 0)-(btn(2) and 1 or 0)
@@ -104,6 +114,7 @@ local function update_game()
  player.y=math.max(top+4,math.min(bottom-8,player.y+dy*player.speed/60))
  clock=clock+1/60
  if entry[1]==6 and entry[3]=="campfire" then effect:emit_campfire(player.x,player.y+8,{count=2,radius=3}) end
+ if entry[1]==9 and snow_surface then effect:set_surface(snow_surface,player.x-4,player.y-4,8) end
  effect:update(1/60)
  if dissolve_time then dissolve_time=dissolve_time+1/60; if dissolve_time>=0.7 then dissolve_time=nil end end
  if entry[1]==5 then effect:set_road(nil,nil,math.sin(clock*0.25)*0.35) end
@@ -159,7 +170,7 @@ local function draw_world()
   local pw,ph=math.max(4,math.floor(8*sx)),math.max(4,math.floor(8*sy))
   rect(math.floor(player.x-pw/2),math.floor(player.y-ph/2),pw,ph,mapped_color(8))
  end
- if (entry[1]==1 or entry[1]==6 or entry[1]==7) and effect.draw then effect:draw() end
+ if (entry[1]==1 or entry[1]==6 or entry[1]==7 or entry[1]==8 or entry[1]==9) and effect.draw then effect:draw() end
 end
 function TIC()
  if btnp(5) then next_entry() end

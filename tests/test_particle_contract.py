@@ -483,7 +483,7 @@ class ParticleContractTests(unittest.TestCase):
             game_folder = Path(temporary) / "love-contract"
             game_folder.mkdir()
             result_file = Path(temporary) / "love-contract-result.txt"
-            for name in ("main.lua", "particle_contract.lua", "pseudo3d_contract.lua", "pixel_deform_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua"):
+            for name in ("main.lua", "particle_contract.lua", "pseudo3d_contract.lua", "pixel_deform_contract.lua", "screen_fx_contract.lua", "palette_contract.lua", "flames_contract.lua", "electricity_contract.lua", "rain_contract.lua", "snow_contract.lua"):
                 shutil.copy2(ROOT / "tests" / "love2d" / name, game_folder / name)
             result = subprocess.run(
                 [str(love), str(game_folder)],

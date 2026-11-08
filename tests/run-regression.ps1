@@ -64,6 +64,9 @@ try {
     $ticOutput = Join-Path $script:runRoot "tic80-demo.lua"
     & $Python tools/tic80_include.py examples/tic80/demo.lua -o $ticOutput
     if ($LASTEXITCODE -ne 0) { throw "TIC-80 include build failed with exit code $LASTEXITCODE." }
+    $ticIntegrationOutput = Join-Path $script:runRoot "tic80-integration.lua"
+    & $Python tools/tic80_include.py examples/integration_game/tic80/main.lua -o $ticIntegrationOutput
+    if ($LASTEXITCODE -ne 0) { throw "TIC-80 integration game include build failed with exit code $LASTEXITCODE." }
 
     Write-Output "[portable] LÖVE demo staging"
     & $Python examples/love2d/stage_demo.py --stage-only
@@ -77,13 +80,13 @@ try {
     $pico = Resolve-EnginePath $Pico8Exe "VFX8_PICO8_EXE" @("K:\Games\pico-8\pico8.exe") "pico8"
     if ($pico) {
       $nativeAvailable++
-      foreach ($cart in @("profile_contract.p8", "profile_contract_advanced.p8")) {
+      foreach ($cart in @("profile_contract.p8", "profile_contract_advanced.p8", "weather_contract.p8")) {
         $cartPath = Join-Path $repoRoot ("tests\pico8\" + $cart)
         $testHome = Join-Path $script:runRoot ("pico8-" + [guid]::NewGuid().ToString("N"))
         New-Item -ItemType Directory -Path $testHome | Out-Null
         Write-Output "[native] PICO-8 $cart"
         $result = Invoke-OwnedProcess $pico @("-home", $testHome, "-x", $cartPath) $repoRoot 5 "PICO-8 $cart" -StopAfterTimeout
-        if ($result.Output -match "ERROR:" -or $result.Output -notmatch "VFX8_(CORE|ADVANCED)_PROFILE_CONTRACT,PASS") {
+        if ($result.Output -match "ERROR:" -or $result.Output -notmatch "VFX8_(CORE|ADVANCED|WEATHER)_PROFILE_CONTRACT,PASS") {
           throw "PICO-8 $cart failed. Runtime output:`n$($result.Output)"
         }
         $nativePassed++

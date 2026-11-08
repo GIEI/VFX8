@@ -7,8 +7,10 @@ include("vfx8/palette_fx.lua")
 include("vfx8/pseudo3d.lua")
 include("vfx8/flames.lua")
 include("vfx8/electricity.lua")
+include("vfx8/rain.lua")
+include("vfx8/snow.lua")
 
-local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity"}
+local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity", "rain", "snow"}
 local qualities = {"low", "medium", "high"}
 local selected, quality = 1, 1
 local fx_enabled, active = true, nil
@@ -38,8 +40,8 @@ end
 function _update()
   tick = (tick + 1) % 240
   wave_time = wave_time + 1 / 60
-  if btnp(0) then selected = (selected + 5) % 7 + 1; refresh_fx() end
-  if btnp(1) then selected = selected % 7 + 1; refresh_fx() end
+  if btnp(0) then selected = (selected + #fx - 2) % #fx + 1; refresh_fx() end
+  if btnp(1) then selected = selected % #fx + 1; refresh_fx() end
   if btnp(2) then quality = quality % 3 + 1; refresh_fx() end
   if btnp(3) then quality = (quality + 1) % 3 + 1; refresh_fx() end
   if btnp(5) then fx_enabled = not fx_enabled; refresh_fx() end

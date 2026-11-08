@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ENTRY = re.compile(r'\{\s*([1-7])\s*,\s*"([^"]+)"\s*,\s*"([^"]+)"(?:\s*,\s*"([^"]+)")?\s*\}')
+ENTRY = re.compile(r'\{\s*([1-9])\s*,\s*"([^"]+)"\s*,\s*"([^"]+)"(?:\s*,\s*(?:"([^"]+)"|(-?\d+)))?\s*\}')
 MODULES = (
     "particles.lua",
     "screen_fx.lua",
@@ -17,6 +17,8 @@ MODULES = (
     "pseudo3d.lua",
     "flames.lua",
     "electricity.lua",
+    "rain.lua",
+    "snow.lua",
 )
 
 
@@ -27,8 +29,8 @@ def catalog(path: Path) -> list[tuple[int, str, str | None]]:
     closing = source.index("\n}", opening)
     block = source[opening:closing]
     return [
-        (int(group), mode, shape)
-        for group, _label, mode, shape in ENTRY.findall(block)
+        (int(group), mode, shape or angle)
+        for group, _label, mode, shape, angle in ENTRY.findall(block)
     ]
 
 
@@ -39,13 +41,13 @@ class IntegrationGameTests(unittest.TestCase):
         tic80 = catalog(ROOT / "examples/integration_game/tic80/main.lua")
         pico8 = catalog(ROOT / "examples/integration_game/pico8/main.p8") + catalog(
             ROOT / "examples/integration_game/pico8/advanced.p8"
-        )
+        ) + catalog(ROOT / "examples/integration_game/pico8/weather.p8")
 
-        self.assertEqual(len(love), 41)
+        self.assertEqual(len(love), 50)
         self.assertEqual(love, picotron)
         self.assertEqual(love, tic80)
         self.assertEqual(love, pico8)
-        self.assertEqual(Counter(group for group, _, _ in love), {1: 15, 2: 5, 3: 6, 4: 8, 5: 3, 6: 2, 7: 2})
+        self.assertEqual(Counter(group for group, _, _ in love), {1: 15, 2: 5, 3: 6, 4: 8, 5: 3, 6: 2, 7: 2, 8: 6, 9: 3})
 
         expected_variants = {
             2: {"trauma", "left", "right", "shockwave", "flash"},
@@ -54,6 +56,8 @@ class IntegrationGameTests(unittest.TestCase):
             5: {"mode7", "stars", "object"},
             6: {"jet", "campfire"},
             7: {"branched", "clean"},
+            8: {"light", "heavy", "storm"},
+            9: {"light", "heavy", "storm"},
         }
         for group, variants in expected_variants.items():
             with self.subTest(group=group):
@@ -85,11 +89,12 @@ class IntegrationGameTests(unittest.TestCase):
             ROOT / "examples/integration_game/tic80/main.lua",
             ROOT / "examples/integration_game/pico8/main.p8",
             ROOT / "examples/integration_game/pico8/advanced.p8",
+            ROOT / "examples/integration_game/pico8/weather.p8",
         )
         wrong_label_comparisons = re.compile(
             r'entry\[2\]\s*==\s*"(?:'
             r'trauma|left|right|shockwave|flash|wave|rotation|squash|ordered|checker|spiral|'
-            r'cycle|night|sepia|mono|glow|damage|negative|dusk|mode7|stars|object|jet|campfire|branched|clean'
+            r'cycle|night|sepia|mono|glow|damage|negative|dusk|mode7|stars|object|jet|campfire|branched|clean|light|heavy|storm'
             r')"'
         )
         for path in sources:

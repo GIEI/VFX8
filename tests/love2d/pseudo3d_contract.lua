@@ -55,7 +55,7 @@ love.graphics.newShader = old_graphics.newShader
 local draw_colors = scene.draw_colors
 local custom_sky = {0, 0, 0}
 scene:draw({sky = custom_sky})
-assert(mode7_draws == 1 and shader_sends == 7, "Mode 7 should submit its shader and uniforms")
+assert(mode7_draws == 1 and shader_sends == 8, "Mode 7 should submit its shader and uniforms")
 assert(scene.draw_colors.sky == custom_sky)
 assert(scene:set_mode7(false) and scene.mode7 == nil)
 scene:draw()

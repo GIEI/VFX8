@@ -1,6 +1,6 @@
 # Integrating VFX8 into an existing game
 
-**Status:** all seven effect modules are implemented on all four engines. Each effect page has its complete options reference and an example for integrating it into an existing game. Use this page for include rules and the reusable enemy-defeat example below.
+**Status:** all nine effect modules are implemented on all four engines. Each effect page has its complete options reference and an example for integrating it into an existing game. Use this page for include rules and the reusable enemy-defeat example below.
 
 VFX8 is a collection of selective modules. Developers include only the files they use. No module defines or replaces `_init`, `_update`, `_update60`, `_draw`, `TIC`, or the game's `love.*` callbacks. The game retains its own lifecycle and explicitly calls the effect API documented on that effect's page in `docs/effects/`.
 
@@ -203,6 +203,6 @@ For every module:
 2. Its public API will use module-specific names; the `fx` table in the demos is only a test adapter.
 3. The module will not take ownership of the game's main loop, input, or window.
 4. The game can create/configure, trigger, update, draw, and disable the effect through documented calls.
-5. Quality profiles and resource limits will be local to the effect, so including one module does not impose the cost of the other four.
+5. Quality profiles and resource limits stay local to each effect, so including one module does not impose the cost of the other eight.
 
 The [demo instructions](../examples/README.md) explain how to compare effects against a reference scene; the demos are not required to use VFX8 in your own game.

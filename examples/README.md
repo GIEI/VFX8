@@ -2,16 +2,16 @@
 
 Four engine demo environments let you try VFX8 modules with `low`, `medium`, and `high` quality profiles. PICO-8 uses separate focused carts for core effects, pseudo-3D, and flames/electricity to fit its code token budget.
 
-For a callback and input integration check, see the [minimal integration game](integration_game/README.md). It is provided as a self-contained project for each engine and advances through the seven effects with one button.
+For a callback and input integration check, see the [minimal integration game](integration_game/README.md). It is provided as a self-contained project for each engine and advances through all nine effects and their variants.
 
 ## Startup
 
 | Engine | Files | How to run |
 | --- | --- | --- |
-| PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), and [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, or flames and electricity. Each includes only the modules it uses. The [`pseudo3d_demo_standalone.p8`](pico8/pseudo3d_demo_standalone.p8) copy has its module embedded for setups where the relative `#include` path is not resolved. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
+| PICO-8 | [`pico8/demo.p8`](pico8/demo.p8), [`pico8/pseudo3d_demo.p8`](pico8/pseudo3d_demo.p8), [`pico8/flames_electricity_demo.p8`](pico8/flames_electricity_demo.p8), and [`pico8/weather_demo.p8`](pico8/weather_demo.p8) | Load a focused showcase cart for core effects, pseudo-3D, flames/electricity, or rain/snow. Each includes only the modules it uses. The [`pseudo3d_demo_standalone.p8`](pico8/pseudo3d_demo_standalone.p8) copy has its module embedded for setups where the relative `#include` path is not resolved. See [PICO-8 token measurements](../benchmarks/results/pico8-showcase-token-budget.md). |
 | Picotron | [`picotron/main.lua`](picotron/main.lua) + [`demo_extension.lua`](picotron/demo_extension.lua) + `vfx8/*.lua` | Put the files in the cartridge root and copy the implemented modules from `src/picotron/` to `vfx8/`; run with Ctrl+R. |
 | LÖVE | [`love2d/stage_demo.py`](love2d/stage_demo.py) | Run `python examples/love2d/stage_demo.py` from the repository root; the script stages the source module and launches LÖVE. |
-| TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file, import the generated source into a Lua cartridge, then use `run`. The user-confirmed native test used this compiled showcase and all seven effects worked. |
+| TIC-80 | [`tic80/demo.lua`](tic80/demo.lua) + [`demo_extension.lua`](tic80/demo_extension.lua) | Build the combined file, import the generated source into a Lua cartridge, then use `run`. The original seven effects were user-tested; rain and snow native checks remain open. |
 
 Do not pass `examples/love2d/main.lua` directly to `love.exe`. LÖVE loads a game folder, and the source example depends on modules that the staging script copies into `examples/love2d/build/vfx8/`. To prepare and launch it, run `python examples/love2d/stage_demo.py` from the repository root. To prepare the folder without opening a window, add `--stage-only`; then launch `examples/love2d/build/` with LÖVE.
 
@@ -40,11 +40,11 @@ PICO-8 uses `#include` to load the modules required by each focused cart. Picotr
 | Variant / next particle preset | X | Z | X | P |
 | Next emission shape | Cycled with particle preset using X | C | Y | M |
 
-The starting profile is `low`. Changing module or profile reinitializes the active slot; turning effects off calls `on_exit`, displays `FX DISABLED`, and leaves the scene unprocessed. With the particle module selected, trigger emits the selected preset using the selected shape. Shapes are point, horizontal line, and rectangular area. In `pixel_deform`, the variant button rotates the grid around the moving square while the square and rest of the scene stay fixed. In `palette_fx`, it cycles color cycling, night, sepia, monochrome, glow, custom dusk mapping, and negative flash; trigger flashes mapped scene colors or applies the selected negative. In `pseudo3d`, the scene displays a textured Mode 7 ground plane and parallax starfield; trigger adds an object aligned to the road. In `flames`, the campfire emits continuously and trigger adds a burst; cycle the variant to switch to a directional flamethrower jet. In `electricity`, trigger creates a brief jagged bolt between the crosshair and the far side of the scene; cycle the variant for an unbranched arc. PICO-8 has only two action buttons: `O` triggers the active effect and `X` cycles the active variant or particle preset.
+The starting profile is `low`. Changing module or profile reinitializes the active slot; turning effects off calls `on_exit`, displays `FX DISABLED`, and leaves the scene unprocessed. With the particle module selected, trigger emits the selected preset using the selected shape. Shapes are point, horizontal line, and rectangular area. In `pixel_deform`, the variant button rotates the grid around the moving square while the square and rest of the scene stay fixed. In `palette_fx`, it cycles color cycling, night, sepia, monochrome, glow, custom dusk mapping, and negative flash; trigger flashes mapped scene colors or applies the selected negative. In `pseudo3d`, the scene displays a textured Mode 7 ground plane and parallax starfield; trigger adds an object aligned to the road. In `flames`, the campfire emits continuously and trigger adds a burst; cycle the variant to switch to a directional flamethrower jet. In `electricity`, trigger creates a brief jagged bolt between the crosshair and the far side of the scene; cycle the variant for an unbranched arc. `rain` cycles vertical and oblique directions at light/heavy/storm density; `snow` cycles light/heavy/blizzard density and settles on its ground surface. PICO-8 has only two action buttons: `O` triggers or toggles the active effect and `X` cycles the active variant or particle preset.
 
 ## Connecting a module
 
-Each `demo_extension.lua` defines an `fx` table with one slot for each of the seven effect modules:
+Each `demo_extension.lua` defines an `fx` table with one slot for each of the nine effect modules:
 
 | Slot | Module |
 | --- | --- |
@@ -55,6 +55,8 @@ Each `demo_extension.lua` defines an `fx` table with one slot for each of the se
 | `fx[5]` | `pseudo3d` (textured Mode 7 implementation) |
 | `fx[6]` | `flames` (campfire and directional flamethrower jet) |
 | `fx[7]` | `electricity` (irregular point-to-point lightning) |
+| `fx[8]` | `rain` (vertical and oblique, light/heavy/storm) |
+| `fx[9]` | `snow` (light/heavy/blizzard, with a ground catch surface) |
 
 The table is a **demo adapter**, not the public library API. Optional adapter methods:
 
@@ -73,7 +75,7 @@ fx[1] = {
 
 `render_scene` must call `draw_scene()` **once**. Effects that change the camera, buffer, or palette can set the state before that call and restore it immediately afterward. Use `draw` for overlays such as particles. If a method is missing, the demo uses its default behavior. On fantasy consoles, the demo passes `dt = 1/60`; LÖVE uses the real `love.update` callback time.
 
-On PICO-8 and TIC-80, connect one module at a time: including all seven in one test cartridge would skew measurements and use code space unnecessarily. Performance harnesses and recorded measurements are maintained under `benchmarks/`; the interactive demos are for visual and input checks, not automatic benchmarking.
+On PICO-8 and TIC-80, connect only the modules needed by a game to conserve code space. Performance harnesses and recorded measurements are maintained under `benchmarks/`; the interactive demos are for visual and input checks, not automatic benchmarking.
 
 ## Quick demo check
 

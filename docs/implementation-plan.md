@@ -2,13 +2,13 @@
 
 ## Goal and scope
 
-Build a collection of composable visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. All seven modules are implemented for all four engines. The user confirms the integration game and visual checks work on all four engines, and performance measurements are complete in PICO-8 and TIC-80. Exact raw values have not been added to the repository. Picotron and LÖVE have repeatable all-effect benchmark reports; remaining work concerns measurement records and platform-specific resource coverage.
+Build a collection of composable visual effects for games with widely varying resources. Each effect should produce a recognizable result on the four engines while keeping code and costs specific to each platform. Release 1.1.0 contains nine implemented modules for all four engines. The user confirms the integration game and visual checks for the original seven effects work on all four engines. Rain and snow have portable contracts, PICO-8 profile coverage, and LÖVE runtime coverage, but still need native visual review on every target and resource measurements. Exact raw values for earlier PICO-8/TIC-80 measurements have not been added to the repository. Picotron and LÖVE benchmark reports cover the original seven effects only.
 
-The first version will use Lua or each engine's Lua dialect and native drawing primitives. It will not require external assets, extra frameworks, or a mandatory shared runtime. Advanced capabilities will remain optional.
+The library uses Lua or each engine's Lua dialect and native drawing primitives. It does not require external assets, extra frameworks, or a mandatory shared runtime; advanced capabilities remain optional.
 
 ## Conventions to establish with the first implementation
 
-1. Use the seven names `particles`, `screen_fx`, `pixel_deform`, `palette_fx`, `pseudo3d`, `flames`, and `electricity` in `src/<engine>/`, `examples/<engine>/`, and `docs/effects/`. Each module gets one dedicated page covering its variants.
+1. Use the nine names `particles`, `screen_fx`, `pixel_deform`, `palette_fx`, `pseudo3d`, `flames`, `electricity`, `rain`, and `snow` in `src/<engine>/`, `examples/<engine>/`, and `docs/effects/`. Each module gets one dedicated page covering its variants.
 2. Keep a shared conceptual lifecycle: setup, trigger, update, and draw. The concrete syntax will be idiomatic for each engine and established with the first effect.
 3. Make coordinates, time units, and draw order explicit. Fixed-frame fantasy consoles and LÖVE's `dt` must not produce different durations because of implicit conversions.
 4. Avoid per-frame allocations where practical: use reusable pools, configurable capacity limits, and deterministic cleanup of expired items.
@@ -106,11 +106,30 @@ The order below is the development priority: first, feedback useful in almost an
 
 **Deliverable:** a game can connect arbitrary event points with a brief bolt while bounding geometry generation, storage, and draw work.
 
+### 8. Rain — `rain`
+
+- **Direction:** vertical rainfall and a configurable, clamped oblique angle.
+- **Intensity:** light, heavy, or storm density within a quality-selected fixed pool.
+- **Budget:** preallocated streak arrays and one native line per active drop; pool maxima stay especially small on PICO-8 and TIC-80.
+- **API:** `new`, `set_intensity`, `set_angle`, `update`, `draw`, `clear`, and `stats`.
+
+**Status:** implemented for all four engines with per-engine capacities, an eight/nine-slot demo adapter, a dedicated effect guide, and native boot coverage on PICO-8. Picotron, LÖVE, and TIC-80 native verification and new weather performance records remain open.
+
+### 9. Snow — `snow`
+
+- **Movement:** gently swaying flakes with configurable fall speed, sway, and size.
+- **Surface deposits:** optional horizontal catch surfaces for game objects plus a built-in floor; deposits expire within a configurable one-to-three-second range.
+- **Intensity:** light, heavy, or blizzard density with a fixed, quality-scaled flake pool.
+- **Budget:** preallocated flake/deposit pools, capped surface registration, and bounded collision checks.
+- **API:** `new`, `set_intensity`, `add_surface`, `set_surface`, `clear_surfaces`, `update`, `draw`, `clear`, and `stats`.
+
+**Status:** implemented for all four engines with per-engine pool caps, integration examples, a dedicated effect guide, portable contracts, and PICO-8 native profile coverage. LÖVE native runtime contracts also pass. Native visual review and weather performance records remain open; Picotron's new smoke cases and TIC-80 need native execution.
+
 ### Native verification, measurement, and release polish
 
-- Run every engine demo in its native runtime at all three profiles, beginning with PICO-8's source/token and CPU limits. **Progress:** the user confirms the integration game and visual checks work on all four engines, and PICO-8/TIC-80 performance measurements are complete. The user also confirms all seven Picotron effects and the standalone PICO-8 pseudo-3D cart work; isolated Picotron smoke passes all modules, covered variants, and both pseudo-3D render modes. Five-run reports record all seven effects across all three profiles and workload levels on Picotron 0.3.0d and LÖVE 11.5. Detailed raw PICO-8/TIC-80 values have not been added to the repository. Standalone PICO-8 per-module token costs remain open. See [benchmark status](../benchmarks/README.md).
+- Run every engine demo in its native runtime at all three profiles, beginning with PICO-8's source/token and CPU limits. **Progress:** the user confirms the original integration game and visual checks work on all four engines, and PICO-8/TIC-80 performance measurements are complete for the original effects. PICO-8 weather profile contracts and carts boot; LÖVE weather runtime contracts pass. Weather visual review on all targets and native Picotron/TIC-80 weather execution remain. Existing Picotron/LÖVE reports cover only the original seven effects. Detailed raw PICO-8/TIC-80 values and standalone per-module token costs remain open. See [benchmark status](../benchmarks/README.md).
 - Test effect combinations where supported, checking draw order, palette priority, callbacks, and graphics state.
-- Record repeatable typical and saturated benchmark runs, including source/code costs and runtime versions. **Progress:** Picotron and LÖVE reports cover all effects and profiles at five repetitions; LÖVE uses 600 sampled frames for each saturated case. The user confirms native PICO-8 and TIC-80 measurements are complete; their detailed result data and release-machine confirmation remain to be recorded.
+- Record repeatable typical and saturated benchmark runs, including source/code costs and runtime versions. **Progress:** Picotron and LÖVE five-run reports cover the original seven effects and all profiles; LÖVE uses 600 sampled frames for each saturated case. Weather is not included. The user confirms native PICO-8 and TIC-80 measurements are complete for the original effects; their detailed result data and release-machine confirmation remain to be recorded.
 - Resolve engine-specific API differences found during native verification; mark unsupported behavior accurately in each effect page.
 - Prepare examples that can be copied into carts/projects; the repository uses the MIT license.
 - Publish a compatibility matrix with the minimum engine versions verified.

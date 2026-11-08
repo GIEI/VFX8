@@ -2,7 +2,7 @@
 
 A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goal is to make effects easy to integrate into games, with predictable costs on fantasy consoles and richer quality options where resources allow.
 
-> **Status:** all seven effect modules are implemented for all four engines. The user confirms visual checks are complete on all four engines and performance measurements are complete on PICO-8 and TIC-80. Detailed PICO-8/TIC-80 measurement values and remaining platform-specific benchmark coverage are tracked in the release checklist.
+> **Release target:** 1.1.0. All nine effect modules have engine-specific implementations for all four engines. Rain and snow are newly included; their runtime/API tests pass, while native visual review and performance measurements are still pending on some targets. See the [release notes](RELEASE_NOTES.md) and [verification checklist](docs/native-visual-checklist.md) for the exact coverage.
 
 **License:** MIT. See [LICENSE](LICENSE).
 
@@ -23,7 +23,7 @@ A 2D visual effects library for **PICO-8, Picotron, LÖVE, and TIC-80**. The goa
 | LÖVE | Lua modules loaded into a project | Idiomatic Lua API; use engine graphics features where helpful |
 | TIC-80 | Lua source integrated into a cartridge | Limited memory and per-frame work, native drawing APIs |
 
-All seven effect modules now have source implementations, demo adapters, and effect pages for all four engines. Native verification and measured performance data remain release requirements.
+All nine effect modules have source implementations, demo adapters, and effect pages for all four engines. Rain and snow native visual checks and measured performance data remain open on some engines.
 
 ## Project structure
 
@@ -33,7 +33,7 @@ The implemented modules follow the short-name convention across source, demos, a
 
 ## Try the demo scenes
 
-Four engine demo environments are available with `low`/`medium`/`high` profiles and effect triggers. PICO-8 uses focused carts for the core effects, pseudo-3D, and flames/electricity to stay below its 8,192-token cap. Startup instructions are in [`examples/README.md`](examples/README.md).
+Four engine demo environments are available with `low`/`medium`/`high` profiles and effect triggers. PICO-8 uses focused carts for the core effects, pseudo-3D, flames/electricity, and weather to stay below its 8,192-token cap. Startup instructions are in [`examples/README.md`](examples/README.md).
 
 To include only the effects you need in an **existing game or cartridge**, follow the [integration guide](docs/integration.md). The engines use `#include`, `include()`, `require()`, or a pre-import include expansion for TIC-80. Effects must not replace the game's main loop.
 
@@ -89,7 +89,7 @@ end
 
 ## Effects
 
-The library contains seven modules:
+The library contains nine modules:
 
 | Order | Module | Included effects |
 | --- | --- | --- |
@@ -100,12 +100,14 @@ The library contains seven modules:
 | 5 | **Pseudo-3D rasterizer** (`pseudo3d`) | textured Mode 7 ground plane, layered starfield, road-aligned depth projection for objects |
 | 6 | **Flames** (`flames`) | fixed-pool campfire and directional flamethrower jet simulations |
 | 7 | **Electric arcs** (`electricity`) | irregular point-to-point lightning with optional deterministic side branches |
+| 8 | **Rain** (`rain`) | vertical or lightly oblique drops at light, heavy, or storm density |
+| 9 | **Snow** (`snow`) | gently swaying flakes and temporary deposits on registered horizontal surfaces |
 
 The distinction between a **screen flash** (`screen_fx`) and an **object flash** (`palette_fx`), and between **particle trails** and other trail use cases, avoids duplicate implementations. Engine-specific variants and limits are defined in the [implementation plan](docs/implementation-plan.md).
 
 ## Documentation for each effect
 
-Each module has its own page in `docs/effects/`, with sections for integration, parameters, quality profiles, cost, and limitations. User-confirmed visual checks cover all four native engines. Measured costs and known evidence gaps are tracked in `benchmarks/` and the release checklist.
+Each module has its own page in `docs/effects/`, with sections for integration, parameters, quality profiles, cost, and limitations. User-confirmed visual checks cover the original seven effects on all four engines. Rain and snow verification status is listed by engine in the [native visual checklist](docs/native-visual-checklist.md). Measured costs and evidence gaps are tracked in `benchmarks/` and the release checklist.
 
 ## Engine references
 
@@ -115,18 +117,18 @@ Technical choices will be checked against official documentation: [PICO-8](https
 
 | Engine | Version verified | Source/API review | Demo build | Native runtime | Measured profiles |
 | --- | --- | --- | --- | --- | --- |
-| PICO-8 | Version not recorded | Source and API contract checks pass | Three focused showcase carts fit the token limit | User confirms the integration game and visual checks across effects/profiles | User confirms performance measurements complete; raw values not supplied. Showcase code tokens: [report](benchmarks/results/pico8-showcase-token-budget.md) |
-| Picotron | 0.3.0d | Portable source/API contracts pass | Include layout prepared | User confirms all seven effects, integration game, and visual checks work; headless smoke also covers variants and all profiles | Performance measurements are in the [Picotron report](benchmarks/results/picotron-effects.md) |
-| LÖVE | 11.5.0 | Portable source/API contracts pass | Staging script passes | User confirms integration game and visual checks work; native API harness passes. The local MCP endpoint is offline. | Five-run all-effects benchmark covers low/medium/high and baseline/typical/saturated workloads; see [results](benchmarks/results/love2d-effects-latest.md) |
-| TIC-80 | 1.2.0 | Portable source/API contracts pass | Include expansion tests pass | User confirms all seven effects and visual checks across profiles; integration game works | User confirms performance measurements complete; raw values not supplied |
+| PICO-8 | Version not recorded | Source and API contracts pass; weather direction contract passes | Focused showcase carts fit the token limit; weather and integration carts boot | Original seven effects visually confirmed; rain/snow carts boot and contracts pass, visual review remains | Original effects measured per user confirmation; weather measurements remain open. Showcase tokens: [report](benchmarks/results/pico8-showcase-token-budget.md) |
+| Picotron | 0.3.0d | Portable source/API contracts pass | Include layout prepared | Original seven effects and integration game confirmed; rain/snow native review remains open | Existing [Picotron report](benchmarks/results/picotron-effects.md) covers the original seven effects |
+| LÖVE | 11.5.0 | Portable contracts and native runtime contracts pass, including rain and snow | Staging script includes all nine effects | Original seven effects visually confirmed; rain/snow visual review remains open | Existing [five-run report](benchmarks/results/love2d-effects-latest.md) covers the original seven; weather measurements remain open |
+| TIC-80 | 1.2.0 | Portable source/API contracts pass | Demo and integration include builds pass | Original seven effects and integration game confirmed; weather still needs native visual review | Original effects measured per user confirmation; weather measurements remain open |
 
-“Implemented” describes source and demo adapters; it does not imply that every release gate has passed. Visual checks are user-confirmed complete on all four engines. PICO-8 and TIC-80 performance measurements are also confirmed complete, while their detailed run records have not yet been added to this repository. See [benchmark status and procedure](benchmarks/README.md).
+“Implemented” describes source and demo adapters; it does not imply that every release gate has passed. Visual checks are user-confirmed complete for the original seven effects on all four engines. Rain and snow review and measurements are still open as listed in the verification links above. PICO-8 and TIC-80 performance measurements are confirmed complete for the original effects, while their detailed run records have not been added to this repository. See [benchmark status and procedure](benchmarks/README.md).
 
 See the [public release checklist](docs/release-checklist.md) for the remaining runtime, performance, packaging, and publication work.
 
 Run portable contracts and available native runtime checks with [`tests/run-regression.ps1`](tests/run-regression.ps1). See [`tests/README.md`](tests/README.md) for coverage, runtime requirements, and skip behavior. The portable regression path runs in GitHub Actions.
 
-Create a clean source archive with `python tools/package_release.py --version 0.1.0-rc.1`. The packager includes source, docs, screenshots, examples, tests, benchmark reports, and license files while omitting generated build folders, caches, and local runtime data. By default it writes to `.tmp/`.
+Create the 1.1.0 source archive with `python tools/package_release.py --version 1.1.0`. The packager includes source, docs, screenshots, examples, tests, benchmark reports, and license files while omitting generated build folders, caches, and local runtime data. By default it writes to `.tmp/`.
 
 ## Contributing
 

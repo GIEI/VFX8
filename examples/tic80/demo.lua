@@ -7,8 +7,10 @@
 --#include "../../src/tic80/pseudo3d.lua"
 --#include "../../src/tic80/flames.lua"
 --#include "../../src/tic80/electricity.lua"
+--#include "../../src/tic80/rain.lua"
+--#include "../../src/tic80/snow.lua"
 
-local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity"}
+local names = {"particles", "screen fx", "pixel warp", "palette fx", "pseudo 3d", "flames", "electricity", "rain", "snow"}
 local qualities = {"low", "medium", "high"}
 local selected, quality = 1, 1
 local fx_enabled, active = true, nil
@@ -88,8 +90,8 @@ function TIC()
   tick = (tick + 1) % 240
   wave_time = wave_time + 1 / 60
   -- TIC-80: up/down=0/1, left/right=2/3, A/B=4/5.
-  if btnp(2) then selected = (selected + 5) % 7 + 1; refresh_fx() end
-  if btnp(3) then selected = selected % 7 + 1; refresh_fx() end
+  if btnp(2) then selected = (selected + #fx - 2) % #fx + 1; refresh_fx() end
+  if btnp(3) then selected = selected % #fx + 1; refresh_fx() end
   if btnp(0) then quality = quality % 3 + 1; refresh_fx() end
   if btnp(1) then quality = (quality + 1) % 3 + 1; refresh_fx() end
   if btnp(5) then fx_enabled = not fx_enabled; refresh_fx() end

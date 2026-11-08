@@ -54,7 +54,7 @@ try {
   }
 
   $passed = $true
-  Write-Output "Picotron native profile smoke passed: low, medium, high; all seven modules and covered variants."
+  Write-Output "Picotron native profile smoke passed: low, medium, high; all nine modules and covered variants."
 }
 finally {
   if ($passed -and (Test-Path -LiteralPath $testHome)) {

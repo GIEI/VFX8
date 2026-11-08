@@ -1,6 +1,6 @@
 # VFX8 Integration Game
 
-A minimal game for checking that VFX8 can be embedded in a project that owns its input, update, and draw callbacks. A square moves with the arrow keys and remains within the play area. One action triggers the selected effect; the other advances through a 41-entry effect-and-variant sequence. The centered header shows the selected effect and variant.
+A minimal game for checking that VFX8 can be embedded in a project that owns its input, update, and draw callbacks. A square moves with the arrow keys and remains within the play area. One action triggers the selected effect; the other advances through a 50-entry effect-and-variant sequence. The centered header shows the selected effect and variant.
 
 ## Controls
 
@@ -10,18 +10,19 @@ A minimal game for checking that VFX8 can be embedded in a project that owns its
 | Trigger selected effect | O | Z | Space | A |
 | Select next effect or variant | X | X | Tab | B |
 
-Each project creates only the active effect. The selector visits all five particle presets with point, line, and area emission, all screen feedback modes, wave warp and rotation, squash and the three dissolve masks, palette cycles and filters, all three pseudo-3D demonstrations, both flame types, and both lightning types. Switching variants clears transient state. The game calls the effect's `update()` from its update callback and draws it from its draw callback. Screen effects wrap the game's scene callback so their temporary render state is restored before the interface is drawn.
+Each project creates only the active effect. The selector visits all five particle presets with point, line, and area emission, all screen feedback modes, wave warp and rotation, squash and the three dissolve masks, palette cycles and filters, all three pseudo-3D demonstrations, both flame types, both lightning types, six rain intensity/direction combinations, and three snow intensities. Switching variants clears transient state. The game calls the effect's `update()` from its update callback and draws it from its draw callback. Snow registers the moving square's top as a catch surface. Screen effects wrap the game's scene callback so their temporary render state is restored before the interface is drawn.
 
 ## Engine projects
 
 ### PICO-8
 
-Copy the `pico8/` folder into PICO-8's carts directory, enter that folder with `cd`, then open `main.p8`. Its includes use the local `vfx8/` folder. PICO-8's 8,192-token cartridge limit does not leave enough room for the complete library in one integration cart, so the seven effects are split into two cartridges:
+Copy the `pico8/` folder into PICO-8's carts directory, enter that folder with `cd`, then open `main.p8`. Its includes use the local `vfx8/` folder. PICO-8's 8,192-token cartridge limit does not leave enough room for the complete library in one integration cart, so the nine effects are split across three cartridges:
 
 - `main.p8`: particles, screen FX, pixel deformation, and palette FX.
 - `advanced.p8`: pseudo-3D, flames, and electricity.
+- `weather.p8`: rain and snow variants.
 
-The X button advances through the effects in order. Moving past the last effect in one cart uses `load()` to open the other cart and passes the square's coordinates, so the sequence feels continuous. Keep both carts and the `vfx8/` folder together in the same PICO-8 virtual directory, and run the cart with that directory as the current directory so its includes and handoff resolve.
+The X button advances through the effects in order. Moving past the last effect in each cart uses `load()` to open the next cart and passes the square's coordinates; the weather cart returns to `main.p8`. Keep all three carts and the `vfx8/` folder together in the same PICO-8 virtual directory, and run the cart with that directory as the current directory so its includes and handoffs resolve. O toggles the weather effect, and X selects the next weather variant.
 
 ### Picotron
 
@@ -39,7 +40,7 @@ From the repository root, expand the local includes into a single source file:
 python tools/tic80_include.py examples/integration_game/tic80/main.lua -o examples/integration_game/tic80/build/main.lua
 ```
 
-Copy `build/main.lua` to TIC-80's working folder, then run `import code main.lua` and `run`. The generated source contains all seven modules, so no module files need to be copied into the console.
+Copy `build/main.lua` to TIC-80's working folder, then run `import code main.lua` and `run`. The generated source contains all nine modules, so no module files need to be copied into the console.
 
 Each project has its own copy of the engine modules in its `vfx8/` directory. This keeps the examples self-contained and makes each include point directly to the matching engine implementation.
 
